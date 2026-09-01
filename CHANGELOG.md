@@ -3,6 +3,19 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Added
+
+- The settings screen has tabs — **الاتصال** and **عام** — reachable with `Ctrl+1` and
+  `Ctrl+2` or by clicking. The general tab holds the two hotkeys and start-with-the-machine,
+  which until now could only be changed from the tray menu. Those save the moment you
+  change them; the connection tab still saves on `Enter` because it verifies the
+  credentials first. If a hotkey turns out to be taken by another program, the screen
+  says so and shows the one that was registered instead.
+- [docs/nudges.md](docs/nudges.md) — the agreed behaviour of the nudge system, written
+  down before any of it is built.
+
 ## [0.4.1] - 2026-09-02
 
 ### Changed

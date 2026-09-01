@@ -66,6 +66,11 @@ npm run dist      # حزم نسخة للمنصة الحالية
 واختاره في `platform/index.js`. الجزء المهم هو رجوع الفوكس — اقرا قسم ويندوز في
 ملف المصايب الأول.
 
+**تاب جديد في الإعدادات:** ضيف شريحة في `#stabs` و`.spane` جنبها في `index.html`،
+وضيف الـ ids في `elements.js`، والاسم في `TABS` و`PANES` جوه `screens/settings.js`.
+القراءة والكتابة بتعدي على `readPreferences` و`savePreferences` — قناة واحدة لكل
+الإعدادات، فالتاب الجديد مش معناه قناة جديدة.
+
 **شاشة جديدة:** اعمل `src/renderer/screens/<name>.js` بيصدّر
 `{ name, enter, leave, render }`، وضيف الـ layout بتاعها في `SCREEN_PARTS` جوه
 `chrome.js`، وسجّلها في `app.js`، وضيف معالج مفاتيح في `keyboard.js` لو محتاجة.

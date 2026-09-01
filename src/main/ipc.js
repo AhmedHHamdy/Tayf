@@ -145,6 +145,9 @@ function register({ workspace, overlay, settings, actions }) {
     return { ...fields, lastOptionFields: remembered[projectKey] || {} };
   });
 
+  ipcMain.handle('prefs:get', () => actions.readPreferences());
+  ipcMain.handle('prefs:save', (_event, patch) => actions.savePreferences(patch));
+
   ipcMain.handle('config:get', () => credentials.readWithoutToken());
 
   ipcMain.handle('config:save', async (_event, candidate) => {

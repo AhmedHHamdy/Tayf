@@ -1,15 +1,80 @@
 import elements from '../elements.js';
 import { state } from '../state.js';
 import { showLayout, paintBanners, setContext } from '../chrome.js';
+import { escapeHtml } from '../format.js';
 import { backToTaskList } from './task-list.js';
 
 const CLOSE_DELAY_MS = 900;
+const TABS = ['conn', 'gen'];
+const PANES = { conn: 'pconn', gen: 'pgen' };
+const AUTO_START_LABEL = { darwin: 'يشتغل مع الماك' };
 
 let saving = false;
+let activeTab = 'conn';
 
 function setNote(text, className) {
   elements.snote.textContent = text || '';
   elements.snote.className = className || '';
+}
+
+function fillChoices(select, choices, current) {
+  select.innerHTML = (choices || [])
+    .map((choice) => {
+      const selected = choice.accelerator === current ? ' selected' : '';
+      return `<option value="${escapeHtml(choice.accelerator)}"${selected}>${escapeHtml(choice.label)}</option>`;
+    })
+    .join('');
+}
+
+function paintPreferences(preferences) {
+  fillChoices(elements.shotkey, preferences.toggleChoices, preferences.toggleHotkey);
+  fillChoices(elements.saddkey, preferences.composeChoices, preferences.composeHotkey);
+  elements.sauto.checked = !!preferences.autoStart;
+  elements.sautotext.textContent =
+    AUTO_START_LABEL[window.tayf.platform] || 'يشتغل مع الويندوز';
+}
+
+function refused(requested, registered, choices) {
+  if (!requested || requested === registered) return null;
+  const fallback = (choices || []).find((choice) => choice.accelerator === registered);
+  return `الاختصار ده محجوز لبرنامج تاني — طيف خد ${fallback ? fallback.label : registered}`;
+}
+
+async function savePreference(patch) {
+  const preferences = await window.tayf.savePreferences(patch);
+  paintPreferences(preferences);
+
+  const problem =
+    refused(patch.toggleHotkey, preferences.toggleHotkey, preferences.toggleChoices) ||
+    refused(patch.composeHotkey, preferences.composeHotkey, preferences.composeChoices);
+
+  setNote(problem || 'اتحفظ.', problem ? 'bad' : 'good');
+}
+
+export function showTab(name) {
+  if (!PANES[name]) return;
+  activeTab = name;
+
+  TABS.forEach((tab) => elements[PANES[tab]].classList.toggle('on', tab === name));
+  [...elements.stabs.children].forEach((chip) =>
+    chip.classList.toggle('on', chip.dataset.t === name)
+  );
+
+  const first = elements[PANES[name]].querySelector('input, select');
+  if (first) {
+    first.focus();
+    if (first.select) first.select();
+  }
+}
+
+export function showTabByNumber(number) {
+  const name = TABS[number - 1];
+  if (name) showTab(name);
+  return !!name;
+}
+
+export function onConnectionTab() {
+  return activeTab === 'conn';
 }
 
 export async function save() {
@@ -53,8 +118,8 @@ export const settingsScreen = {
       ? 'متحفوظ — سيبه فاضي لو مش هتغيّره'
       : 'الصق الـ API Token';
 
-    elements.ssite.focus();
-    elements.ssite.select();
+    paintPreferences(await window.tayf.readPreferences());
+    showTab(state.workspace.configured ? activeTab : 'conn');
   },
 
   render() {
@@ -65,3 +130,16 @@ export const settingsScreen = {
 };
 
 elements.tokenlink.addEventListener('click', () => window.tayf.openTokenPage());
+elements.stabs.addEventListener('click', (event) => {
+  const chip = event.target.closest('.stab');
+  if (chip) showTab(chip.dataset.t);
+});
+elements.shotkey.addEventListener('change', () =>
+  savePreference({ toggleHotkey: elements.shotkey.value })
+);
+elements.saddkey.addEventListener('change', () =>
+  savePreference({ composeHotkey: elements.saddkey.value })
+);
+elements.sauto.addEventListener('change', () =>
+  savePreference({ autoStart: elements.sauto.checked })
+);

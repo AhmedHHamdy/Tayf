@@ -3,6 +3,7 @@
 const { app, Notification } = require('electron');
 
 const platform = require('./platform');
+const autostart = require('./autostart');
 const credentials = require('../storage/credentials');
 const cache = require('../storage/cache');
 const log = require('../storage/log');
@@ -19,6 +20,13 @@ const { NOTIFICATION_TEXT } = require('../strings');
 
 const REFRESH_INTERVAL_MS = 60_000;
 const OPEN_TIME_BUDGET_MS = 500;
+
+function hotkeyChoices(accelerators) {
+  return accelerators.map((accelerator) => ({
+    accelerator,
+    label: platform.hotkeyLabel(accelerator)
+  }));
+}
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -61,6 +69,20 @@ function start() {
     revealConfig: () => tray.reveal(credentials.ensureFile()),
     checkUpdates: () => updates.check(),
     installUpdate: () => updates.install(),
+    readPreferences: () => ({
+      toggleHotkey: hotkeys.toggle,
+      composeHotkey: hotkeys.compose,
+      toggleChoices: hotkeyChoices(platform.toggleHotkeys),
+      composeChoices: hotkeyChoices(platform.composeHotkeys),
+      autoStart: autostart.isEnabled()
+    }),
+    savePreferences: (patch) => {
+      if (patch.toggleHotkey) hotkeys.choose(patch.toggleHotkey);
+      if (patch.composeHotkey) hotkeys.chooseCompose(patch.composeHotkey);
+      if (typeof patch.autoStart === 'boolean') autostart.setEnabled(patch.autoStart);
+      tray.update();
+      return actions.readPreferences();
+    },
     reportOpenTime: (milliseconds) => {
       const mark = milliseconds <= OPEN_TIME_BUDGET_MS ? 'ok' : 'slow';
       log.appendLine(`overlay opened in ${milliseconds}ms (${mark})`);

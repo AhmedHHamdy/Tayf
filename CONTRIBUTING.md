@@ -68,6 +68,11 @@ Nothing above the provider layer should need to change. See
 `windows.js` / `macos.js`, and select it in `platform/index.js`. The interesting part
 is focus restoration — read the Windows section of the quirks doc first.
 
+**A settings tab:** add a chip to `#stabs` and a `.spane` beside it in `index.html`, its
+ids to `elements.js`, and its name to `TABS` and `PANES` in `screens/settings.js`. Reads
+and writes go through `readPreferences` / `savePreferences` — one pair of IPC channels
+for every preference, so a new tab does not mean a new channel.
+
 **A new screen:** create `src/renderer/screens/<name>.js` exporting
 `{ name, enter, leave, render }`, add its layout to `SCREEN_PARTS` in `chrome.js`,
 register it in `app.js`, and add a key handler in `keyboard.js` if it needs one.

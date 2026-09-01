@@ -28,18 +28,39 @@
     <div id="msg"></div>
 
     <div id="settings">
-      <h3>وصّل طيف بجيرا</h3>
-      <div class="sub">
-        محتاجين API Token — <a id="tokenlink">افتح صفحة التوكنات</a> واعمل واحد جديد وانسخه.
+      <div id="stabs">
+        <span class="stab on" data-t="conn"><b>1</b>الاتصال</span>
+        <span class="stab" data-t="gen"><b>2</b>عام</span>
       </div>
-      <div class="sgrid">
-        <label for="ssite">الموقع</label>
-        <input id="ssite" spellcheck="false" placeholder="your-company.atlassian.net" />
-        <label for="semail">الإيميل</label>
-        <input id="semail" spellcheck="false" placeholder="الإيميل بتاعك على جيرا" />
-        <label for="stoken">التوكن</label>
-        <input id="stoken" type="password" spellcheck="false" placeholder="الصق الـ API Token" />
+
+      <div id="pconn" class="spane">
+        <h3>وصّل طيف بجيرا</h3>
+        <div class="sub">
+          محتاجين API Token — <a id="tokenlink">افتح صفحة التوكنات</a> واعمل واحد جديد وانسخه.
+        </div>
+        <div class="sgrid">
+          <label for="ssite">الموقع</label>
+          <input id="ssite" spellcheck="false" placeholder="your-company.atlassian.net" />
+          <label for="semail">الإيميل</label>
+          <input id="semail" spellcheck="false" placeholder="الإيميل بتاعك على جيرا" />
+          <label for="stoken">التوكن</label>
+          <input id="stoken" type="password" spellcheck="false" placeholder="الصق الـ API Token" />
+        </div>
       </div>
+
+      <div id="pgen" class="spane">
+        <h3>عام</h3>
+        <div class="sub">اللي هنا بيتحفظ أول ما تغيّره.</div>
+        <div class="sgrid">
+          <label for="shotkey">اختصار الفتح</label>
+          <select id="shotkey"></select>
+          <label for="saddkey">اختصار تاسك جديدة</label>
+          <select id="saddkey"></select>
+          <label for="sauto">التشغيل</label>
+          <label class="scheck"><input id="sauto" type="checkbox" /><span id="sautotext">يشتغل مع الويندوز</span></label>
+        </div>
+      </div>
+
       <div id="snote"></div>
     </div>
 
@@ -105,6 +126,7 @@
     </div>
     <div id="foots">
       <span><kbd>Tab</kbd> تنقل</span>
+      <span><kbd>Ctrl 1</kbd><kbd>2</kbd> التابات</span>
       <span><kbd>Enter</kbd> احفظ واتأكد</span>
       <span><kbd>Esc</kbd> اقفل</span>
       <span id="metas"></span>

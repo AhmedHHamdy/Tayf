@@ -260,18 +260,39 @@
   #settings h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
   #settings .sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
   #settings .sub a { color: var(--accent); cursor: pointer; text-decoration: underline; }
-  .sgrid { display: grid; grid-template-columns: 104px 1fr; gap: 9px 12px; align-items: center; }
+  #stabs { display: flex; gap: 6px; margin-bottom: 18px; }
+  .stab {
+    font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+    background: var(--fill-3); border: 1px solid var(--line);
+    border-radius: 4px; padding: 4px 10px; cursor: pointer;
+  }
+  .stab:hover { color: var(--text); }
+  .stab.on { background: var(--accent-bg); border-color: var(--accent-line); color: var(--accent); }
+  .stab b { color: var(--dim); font-weight: 400; margin-inline-end: 6px; }
+  .stab.on b { color: var(--accent-dim); }
+
+  .spane { display: none; }
+  .spane.on { display: block; }
+
+  .sgrid { display: grid; grid-template-columns: 124px 1fr; gap: 9px 12px; align-items: center; }
   .sgrid label {
     font-family: var(--mono); font-size: 10.5px; color: var(--dim); letter-spacing: .3px;
   }
-  .sgrid input {
+  .sgrid input, .sgrid select {
     width: 100%; padding: 9px 10px;
     background: var(--fill);
     border: 1px solid transparent; border-radius: 5px;
     color: var(--text); font-size: 13px; font-family: var(--sans); outline: none;
   }
-  .sgrid input:focus { border-color: var(--accent-line); background: var(--accent-soft); }
+  .sgrid input:focus, .sgrid select:focus {
+    border-color: var(--accent-line); background: var(--accent-soft);
+  }
   .sgrid input::placeholder { color: var(--dim); }
+  .sgrid select option { background: var(--elev-2); color: var(--text); }
+
+  .scheck { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .scheck input { width: auto; padding: 0; accent-color: var(--accent); cursor: pointer; }
+  .scheck span { font-size: 12px; color: var(--muted); }
   #snote { min-height: 18px; padding: 14px 2px 2px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
   #snote.bad { color: var(--bad); }
   #snote.good { color: var(--good); }
