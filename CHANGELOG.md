@@ -7,6 +7,9 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
 ### Added
 
+- An application icon (`build/icon.png`, 1024×1024). electron-builder derives the `.ico`
+  and `.icns` from it, so it is what shows on the installer, the Start Menu shortcut and
+  the Dock. The tray glyph in `assets/` is unrelated and unchanged.
 - Automatic updates on Windows. Tayf checks on start and every four hours, downloads in
   the background, and offers **تحديث جاهز — سطّبه دلوقتي** in the tray menu. Nothing is
   installed until you ask for it, or until the app next quits.
