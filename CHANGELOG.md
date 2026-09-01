@@ -3,6 +3,15 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Changed
+
+- The Windows tray icon is the app logo (`assets/tray.png`, with an `@2x` for HiDPI)
+  instead of the three-bar glyph, so the icon by the clock matches the one on the
+  shortcut. macOS keeps its monochrome `trayTemplate` — the menu bar requires a template
+  image, and a coloured one cannot be tinted for light and dark.
+
 ## [0.4.0] - 2026-09-01
 
 ### Added

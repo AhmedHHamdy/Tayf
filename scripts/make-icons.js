@@ -66,8 +66,6 @@ function toPng(width, height, pixels) {
 }
 
 const PALETTES = {
-  onDarkTaskbar: { accent: [240, 168, 60, 255], bar: [150, 154, 168, 190] },
-  onLightTaskbar: { accent: [163, 103, 13, 255], bar: [74, 78, 92, 205] },
   macTemplate: { accent: [0, 0, 0, 255], bar: [0, 0, 0, 150] }
 };
 
@@ -106,8 +104,6 @@ function draw(size, paletteName) {
 }
 
 const OUTPUTS = [
-  ['tray-on-dark.png', 32, 'onDarkTaskbar'],
-  ['tray-on-light.png', 32, 'onLightTaskbar'],
   ['trayTemplate.png', 16, 'macTemplate'],
   ['trayTemplate@2x.png', 32, 'macTemplate']
 ];

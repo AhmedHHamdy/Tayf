@@ -2,7 +2,7 @@
 
 const path = require('path');
 const koffi = require('koffi');
-const { app, nativeImage, nativeTheme } = require('electron');
+const { app, nativeImage } = require('electron');
 
 const user32 = koffi.load('user32.dll');
 const GetForegroundWindow = user32.func('void* GetForegroundWindow()');
@@ -57,8 +57,7 @@ module.exports = {
   },
 
   trayIcon(assetsDirectory) {
-    const file = nativeTheme.shouldUseDarkColors ? 'tray-on-dark.png' : 'tray-on-light.png';
-    const image = nativeImage.createFromPath(path.join(assetsDirectory, file));
+    const image = nativeImage.createFromPath(path.join(assetsDirectory, 'tray.png'));
     return image.isEmpty() ? nativeImage.createEmpty() : image;
   },
 
