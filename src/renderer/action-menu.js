@@ -48,8 +48,8 @@ function place() {
   const width = elements.actions.offsetWidth || FALLBACK_WIDTH;
   const height = elements.actions.offsetHeight || FALLBACK_HEIGHT;
 
-  let left = panel.right + EDGE_GAP;
-  if (left + width > window.innerWidth - EDGE_GAP) left = panel.left - width - EDGE_GAP;
+  let left = panel.left - width - EDGE_GAP;
+  if (left < EDGE_GAP) left = panel.right + EDGE_GAP;
 
   elements.actions.style.left = `${Math.max(EDGE_GAP, left)}px`;
   elements.actions.style.top = `${Math.max(

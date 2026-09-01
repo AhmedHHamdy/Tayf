@@ -152,7 +152,7 @@ function handleCompose(event, key) {
 }
 
 function handleActionMenu(event, key) {
-  if (event.key === 'Escape' || event.key === 'ArrowLeft') {
+  if (event.key === 'Escape' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     event.preventDefault();
     closeMenu();
     return true;

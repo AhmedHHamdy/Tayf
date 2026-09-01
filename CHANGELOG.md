@@ -5,6 +5,14 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
 ## [Unreleased]
 
+### Changed
+
+- **The overlay is right-to-left.** The interface has always been Arabic but the document
+  was not marked `dir="rtl"`, so the layout ran left-to-right with Arabic text inside it:
+  the accent rail on the wrong edge of a row, the issue key on the wrong side, the action
+  menu opening away from the text. The handful of `left`/`right` rules are now logical
+  properties, so a future English build flips back by changing one attribute.
+
 ### Added
 
 - The settings screen has a sidebar — **الاتصال** and **عام** — reachable with `Ctrl+1`
