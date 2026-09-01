@@ -3,7 +3,7 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
-## [Unreleased]
+## [0.4.0] - 2026-09-01
 
 ### Added
 
