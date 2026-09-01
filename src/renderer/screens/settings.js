@@ -7,7 +7,7 @@ import { backToTaskList } from './task-list.js';
 const CLOSE_DELAY_MS = 900;
 const TABS = ['conn', 'gen'];
 const PANES = { conn: 'pconn', gen: 'pgen' };
-const AUTO_START_LABEL = { darwin: 'يشتغل مع الماك' };
+const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
 
 let saving = false;
 let activeTab = 'conn';
@@ -31,7 +31,7 @@ function paintPreferences(preferences) {
   fillChoices(elements.saddkey, preferences.composeChoices, preferences.composeHotkey);
   elements.sauto.checked = !!preferences.autoStart;
   elements.sautotext.textContent =
-    AUTO_START_LABEL[window.tayf.platform] || 'يشتغل مع الويندوز';
+    AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
 }
 
 function refused(requested, registered, choices) {
@@ -56,8 +56,8 @@ export function showTab(name) {
   activeTab = name;
 
   TABS.forEach((tab) => elements[PANES[tab]].classList.toggle('on', tab === name));
-  [...elements.stabs.children].forEach((chip) =>
-    chip.classList.toggle('on', chip.dataset.t === name)
+  elements.snav.querySelectorAll('.snavitem').forEach((item) =>
+    item.classList.toggle('on', item.dataset.t === name)
   );
 
   const first = elements[PANES[name]].querySelector('input, select');
@@ -130,9 +130,9 @@ export const settingsScreen = {
 };
 
 elements.tokenlink.addEventListener('click', () => window.tayf.openTokenPage());
-elements.stabs.addEventListener('click', (event) => {
-  const chip = event.target.closest('.stab');
-  if (chip) showTab(chip.dataset.t);
+elements.snav.addEventListener('click', (event) => {
+  const item = event.target.closest('.snavitem');
+  if (item) showTab(item.dataset.t);
 });
 elements.shotkey.addEventListener('change', () =>
   savePreference({ toggleHotkey: elements.shotkey.value })

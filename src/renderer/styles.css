@@ -256,43 +256,62 @@
   .fil b { color: var(--dim); font-weight: 400; margin-inline-end: 5px; }
   .fil.on b { color: var(--accent-dim); }
 
-  #settings { display: none; padding: 20px; }
-  #settings h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-  #settings .sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
-  #settings .sub a { color: var(--accent); cursor: pointer; text-decoration: underline; }
-  #stabs { display: flex; gap: 6px; margin-bottom: 18px; }
-  .stab {
-    font-family: var(--mono); font-size: 10.5px; color: var(--muted);
-    background: var(--fill-3); border: 1px solid var(--line);
-    border-radius: 4px; padding: 4px 10px; cursor: pointer;
+  #settings { display: none; }
+  #swrap { display: flex; align-items: stretch; min-height: 340px; }
+
+  #snav {
+    flex: 0 0 186px; padding: 16px 10px;
+    border-inline-end: 1px solid var(--line);
   }
-  .stab:hover { color: var(--text); }
-  .stab.on { background: var(--accent-bg); border-color: var(--accent-line); color: var(--accent); }
-  .stab b { color: var(--dim); font-weight: 400; margin-inline-end: 6px; }
-  .stab.on b { color: var(--accent-dim); }
+  .sgroup {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .5px;
+    color: var(--dim); padding: 4px 8px 8px;
+  }
+  .snavitem {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 8px; margin-bottom: 2px; border-radius: 6px;
+    font-size: 12.5px; color: var(--muted); cursor: pointer;
+  }
+  .snavitem svg { width: 15px; height: 15px; flex: 0 0 15px; color: var(--dim); }
+  .snavitem:hover { background: var(--hover); color: var(--text-2); }
+  .snavitem.on { background: var(--fill-2); color: var(--text); }
+  .snavitem.on svg { color: var(--accent); }
+
+  #sbody { flex: 1; min-width: 0; padding: 16px 20px 4px; overflow-y: auto; max-height: 62vh; }
+  #sbody::-webkit-scrollbar { width: 9px; }
+  #sbody::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 5px; }
 
   .spane { display: none; }
   .spane.on { display: block; }
 
-  .sgrid { display: grid; grid-template-columns: 124px 1fr; gap: 9px 12px; align-items: center; }
-  .sgrid label {
-    font-family: var(--mono); font-size: 10.5px; color: var(--dim); letter-spacing: .3px;
+  .ssection { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .sintro { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.7; }
+  .sintro a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+  .srow {
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    padding: 14px 0; border-top: 1px solid var(--line);
   }
-  .sgrid input, .sgrid select {
-    width: 100%; padding: 9px 10px;
+  .scell { min-width: 0; }
+  .stitle { font-size: 13px; color: var(--text-2); cursor: default; }
+  .shint { font-size: 11.5px; color: var(--muted); margin-top: 3px; line-height: 1.6; }
+
+  .sctl { flex: 0 0 260px; }
+  .sctl-end { flex: 0 0 auto; display: flex; justify-content: flex-end; }
+  .sctl input, .sctl select {
+    width: 100%; padding: 8px 10px;
     background: var(--fill);
-    border: 1px solid transparent; border-radius: 5px;
+    border: 1px solid transparent; border-radius: 6px;
     color: var(--text); font-size: 13px; font-family: var(--sans); outline: none;
   }
-  .sgrid input:focus, .sgrid select:focus {
+  .sctl input:focus, .sctl select:focus {
     border-color: var(--accent-line); background: var(--accent-soft);
   }
-  .sgrid input::placeholder { color: var(--dim); }
-  .sgrid select option { background: var(--elev-2); color: var(--text); }
-
-  .scheck { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-  .scheck input { width: auto; padding: 0; accent-color: var(--accent); cursor: pointer; }
-  .scheck span { font-size: 12px; color: var(--muted); }
+  .sctl input::placeholder { color: var(--dim); }
+  .sctl select option { background: var(--elev-2); color: var(--text); }
+  .sctl input[type="checkbox"] {
+    width: 16px; height: 16px; padding: 0; accent-color: var(--accent); cursor: pointer;
+  }
   #snote { min-height: 18px; padding: 14px 2px 2px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
   #snote.bad { color: var(--bad); }
   #snote.good { color: var(--good); }

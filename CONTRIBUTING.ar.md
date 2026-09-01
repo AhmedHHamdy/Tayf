@@ -66,8 +66,9 @@ npm run dist      # حزم نسخة للمنصة الحالية
 واختاره في `platform/index.js`. الجزء المهم هو رجوع الفوكس — اقرا قسم ويندوز في
 ملف المصايب الأول.
 
-**تاب جديد في الإعدادات:** ضيف شريحة في `#stabs` و`.spane` جنبها في `index.html`،
-وضيف الـ ids في `elements.js`، والاسم في `TABS` و`PANES` جوه `screens/settings.js`.
+**قسم جديد في الإعدادات:** ضيف `.snavitem` في `#snav` و`.spane` فيها `.srow`ات في
+`index.html`، وضيف الـ ids في `elements.js`، والاسم في `TABS` و`PANES` جوه
+`screens/settings.js`.
 القراءة والكتابة بتعدي على `readPreferences` و`savePreferences` — قناة واحدة لكل
 الإعدادات، فالتاب الجديد مش معناه قناة جديدة.
 
