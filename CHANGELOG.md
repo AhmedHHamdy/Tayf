@@ -3,6 +3,28 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Changed
+
+- **The overlay is right-to-left.** The interface has always been Arabic but the document
+  was not marked `dir="rtl"`, so the layout ran left-to-right with Arabic text inside it:
+  the accent rail on the wrong edge of a row, the issue key on the wrong side, the action
+  menu opening away from the text. The handful of `left`/`right` rules are now logical
+  properties, so a future English build flips back by changing one attribute.
+
+### Added
+
+- The settings screen has a sidebar — **الاتصال** and **عام** — reachable with `Ctrl+1`
+  and `Ctrl+2` or by clicking, with each preference on its own row: name and explanation
+  on one side, the control on the other. The general section holds the two hotkeys and
+  start-with-the-machine, which until now could only be changed from the tray menu. Those
+  save the moment you change them; the connection section still saves on `Enter` because
+  it verifies the credentials first. If a hotkey turns out to be taken by another program,
+  the screen says so and shows the one that was registered instead.
+- [docs/nudges.md](docs/nudges.md) — the agreed behaviour of the nudge system, written
+  down before any of it is built.
+
 ## [0.4.1] - 2026-09-02
 
 ### Changed

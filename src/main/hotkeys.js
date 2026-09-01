@@ -43,6 +43,10 @@ function createHotkeys({ platform, settings, onToggle, onCompose }) {
       settings.set('hotkey', accelerator);
       return register();
     },
+    chooseCompose(accelerator) {
+      settings.set('addHotkey', accelerator);
+      return register();
+    },
     releaseAll: () => globalShortcut.unregisterAll()
   };
 }

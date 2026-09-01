@@ -29,5 +29,8 @@ contextBridge.exposeInMainWorld('tayf', {
   createFields: (request) => ipcRenderer.invoke('meta:createFields', request),
 
   readConfig: () => ipcRenderer.invoke('config:get'),
-  saveConfig: (candidate) => ipcRenderer.invoke('config:save', candidate)
+  saveConfig: (candidate) => ipcRenderer.invoke('config:save', candidate),
+
+  readPreferences: () => ipcRenderer.invoke('prefs:get'),
+  savePreferences: (patch) => ipcRenderer.invoke('prefs:save', patch)
 });

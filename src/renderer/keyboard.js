@@ -9,7 +9,11 @@ import { transitionContext, chooseTransition } from './screens/transitions.js';
 import { submit as submitTransitionForm, copyEstimateIntoWorklog } from './screens/transition-form.js';
 import { submit as submitCompose, currentDetail as composeDetail, isEditing } from './screens/compose.js';
 import { currentDetail as viewedDetail } from './screens/item-view.js';
-import { save as saveSettings } from './screens/settings.js';
+import {
+  save as saveSettings,
+  showTabByNumber,
+  onConnectionTab
+} from './screens/settings.js';
 import {
   ACTIONS,
   isOpen as menuIsOpen,
@@ -43,13 +47,17 @@ function focusSearch() {
   elements.search.select();
 }
 
-function handleSettings(event) {
+function handleSettings(event, key) {
   if (event.key === 'Escape') {
     event.preventDefault();
     window.tayf.close();
     return true;
   }
-  if (event.key === 'Enter') {
+  if (hasCommandModifier(event) && /^[0-9]$/.test(key)) {
+    if (showTabByNumber(Number(key))) event.preventDefault();
+    return true;
+  }
+  if (event.key === 'Enter' && onConnectionTab()) {
     event.preventDefault();
     saveSettings();
     return true;
@@ -144,7 +152,7 @@ function handleCompose(event, key) {
 }
 
 function handleActionMenu(event, key) {
-  if (event.key === 'Escape' || event.key === 'ArrowLeft') {
+  if (event.key === 'Escape' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     event.preventDefault();
     closeMenu();
     return true;
