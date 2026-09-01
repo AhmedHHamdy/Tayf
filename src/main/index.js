@@ -12,6 +12,7 @@ const { JiraProvider } = require('../providers/jira');
 const { OverlayWindow } = require('./overlay-window');
 const { createHotkeys } = require('./hotkeys');
 const { createTrayMenu } = require('./tray-menu');
+const { createUpdates } = require('./updates');
 const { relaunch } = require('./relaunch');
 const ipc = require('./ipc');
 const { NOTIFICATION_TEXT } = require('../strings');
@@ -46,6 +47,8 @@ function start() {
     onCompose: () => openOverlay('compose')
   });
 
+  const updates = createUpdates({ log, onChange: () => tray.update() });
+
   const actions = {
     toggle: toggleOverlay,
     openList: () => openOverlay('list'),
@@ -56,6 +59,8 @@ function start() {
     restart: () => relaunch(log),
     revealLog: () => tray.reveal(log.logFile()),
     revealConfig: () => tray.reveal(credentials.ensureFile()),
+    checkUpdates: () => updates.check(),
+    installUpdate: () => updates.install(),
     reportOpenTime: (milliseconds) => {
       const mark = milliseconds <= OPEN_TIME_BUDGET_MS ? 'ok' : 'slow';
       log.appendLine(`overlay opened in ${milliseconds}ms (${mark})`);
@@ -69,7 +74,7 @@ function start() {
     }
   };
 
-  const tray = createTrayMenu({ workspace, hotkeys, actions });
+  const tray = createTrayMenu({ workspace, hotkeys, actions, updates });
 
   function connectProvider() {
     const stored = credentials.read();
@@ -97,11 +102,15 @@ function start() {
   connectProvider();
   hotkeys.register();
   tray.create();
+  updates.start();
 
   workspace.refresh();
   setInterval(() => workspace.refresh(), REFRESH_INTERVAL_MS);
 
   app.on('second-instance', actions.openList);
   app.on('window-all-closed', () => {});
-  app.on('will-quit', () => hotkeys.releaseAll());
+  app.on('will-quit', () => {
+    hotkeys.releaseAll();
+    updates.stop();
+  });
 }

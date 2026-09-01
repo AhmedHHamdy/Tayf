@@ -16,14 +16,25 @@ files:
   - assets/**/*
   - package.json
 
+publish:
+  provider: github
+  owner: Fathi-Mohammed
+  repo: Tayf
+  releaseType: draft
+
 win:
   target:
-    - target: portable
+    - target: nsis
       arch:
         - x64
 
-portable:
-  artifactName: Tayf.exe
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  deleteAppDataOnUninstall: false
+  shortcutName: Tayf
+  artifactName: Tayf-Setup-${version}.${ext}
 
 mac:
   target:

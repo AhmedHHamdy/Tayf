@@ -81,6 +81,40 @@ register it in `app.js`, and add a key handler in `keyboard.js` if it needs one.
 - If you worked around something Jira or an OS does wrong, add it to
   `docs/jira-quirks.md` in the same PR. That file is the point.
 
+## Branches and releases
+
+`main` is always releasable. Work happens on short-lived branches — `feat/...`,
+`fix/...`, `docs/...` — squash-merged through a PR once CI is green, then deleted.
+There is no `develop` or `release/*` branch. If a shipped version ever needs a fix
+while `main` has moved on, branch from the tag.
+
+A release is a tag. Bumping the version, committing and tagging is one command:
+
+```bash
+npm version minor
+git push --follow-tags
+```
+
+Pushing the tag runs `.github/workflows/release.yml`: it builds on Windows and macOS
+and uploads to a **draft** GitHub Release. Draft, so that installed copies never see an
+update feed that is missing half its files. Write the notes from `CHANGELOG.md`, then
+publish the release.
+
+What lands on it:
+
+| File | What it is |
+| --- | --- |
+| `Tayf-Setup-<version>.exe` | Windows installer |
+| `latest.yml` | the feed installed copies read — without it, nothing updates |
+| `Tayf-arm64.dmg`, `Tayf-x64.dmg` | macOS, manual download |
+
+The tag and the `version` field in `package.json` must match; the workflow fails fast
+if they do not, which is what `npm version` is there to prevent.
+
+Updates are checked by `src/main/updates.js`, which is deliberately inert unless the
+app is packaged **and** running on Windows — see the known limitations in
+[CHANGELOG.md](CHANGELOG.md).
+
 ## Reporting bugs
 
 Include your OS, whether it is a dev run or a packaged build, and the relevant part of
