@@ -1,0 +1,85 @@
+'use strict';
+
+const path = require('path');
+const { Tray, Menu, nativeTheme, shell } = require('electron');
+const platform = require('./platform');
+const autostart = require('./autostart');
+const { TRAY_TEXT } = require('../strings');
+
+const ASSETS = path.join(__dirname, '..', '..', 'assets');
+
+function headline(state) {
+  if (!state.configured) return TRAY_TEXT.needsSetup;
+  if (state.error) return TRAY_TEXT.connectionProblem;
+  return TRAY_TEXT.itemCount(state.items.length);
+}
+
+function withHotkey(label, accelerator) {
+  return accelerator ? `${label}  (${platform.hotkeyLabel(accelerator)})` : label;
+}
+
+function createTrayMenu({ workspace, hotkeys, actions }) {
+  let tray = null;
+
+  function template() {
+    const state = workspace.state;
+    const head = headline(state);
+
+    return [
+      { label: `${TRAY_TEXT.appName} — ${head}`, enabled: false },
+      { type: 'separator' },
+      { label: withHotkey(TRAY_TEXT.open, hotkeys.toggle), click: actions.openList },
+      { label: withHotkey(TRAY_TEXT.newItem, hotkeys.compose), click: actions.openCompose },
+      { label: TRAY_TEXT.refreshNow, click: actions.refresh },
+      { type: 'separator' },
+      {
+        label: TRAY_TEXT.hotkey,
+        submenu: platform.toggleHotkeys.map((accelerator) => ({
+          label: platform.hotkeyLabel(accelerator),
+          type: 'radio',
+          checked: hotkeys.toggle === accelerator,
+          click: () => {
+            hotkeys.choose(accelerator);
+            update();
+          }
+        }))
+      },
+      {
+        label: TRAY_TEXT[platform.autoStartLabel],
+        type: 'checkbox',
+        checked: autostart.isEnabled(),
+        click: (item) => {
+          autostart.setEnabled(item.checked);
+          update();
+        }
+      },
+      { type: 'separator' },
+      { label: TRAY_TEXT.settings, click: actions.openSettings },
+      { label: TRAY_TEXT.errorLog, click: actions.revealLog },
+      { label: TRAY_TEXT.openConfigFile, click: actions.revealConfig },
+      { label: TRAY_TEXT.restart, click: actions.restart },
+      { label: TRAY_TEXT.quit, click: actions.quit }
+    ];
+  }
+
+  function update() {
+    if (!tray || tray.isDestroyed()) return;
+    const suffix = hotkeys.toggle ? ` · ${platform.hotkeyLabel(hotkeys.toggle)}` : '';
+    tray.setToolTip(`${TRAY_TEXT.appName} — ${headline(workspace.state)}${suffix}`);
+    tray.setContextMenu(Menu.buildFromTemplate(template()));
+  }
+
+  function create() {
+    tray = new Tray(platform.trayIcon(ASSETS));
+    tray.on('click', actions.toggle);
+    nativeTheme.on('updated', () => {
+      if (tray && !tray.isDestroyed()) tray.setImage(platform.trayIcon(ASSETS));
+    });
+    update();
+    return tray;
+  }
+
+  return { create, update, reveal: (filePath) => shell.showItemInFolder(filePath) };
+}
+
+module.exports = { createTrayMenu };

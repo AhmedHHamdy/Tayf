@@ -1,0 +1,5 @@
+{
+  "site": "your-company.atlassian.net",
+  "email": "you@your-company.com",
+  "token": "API token from id.atlassian.com/manage-profile/security/api-tokens"
+}

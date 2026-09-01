@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'" />
+<title>Tayf</title>
+<link rel="stylesheet" href="styles.css" />
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div id="backdrop">
+  <div id="panel">
+    <div id="bar">
+      <span id="prompt">&rsaquo;</span>
+      <input id="search" placeholder="دوّر على تاسك" autofocus spellcheck="false" />
+    </div>
+    <div id="banner"></div>
+    <div id="fail"></div>
+    <div id="ok"></div>
+    <div id="filters">
+      <span class="fil on" data-f="all">الكل</span>
+      <span class="fil" data-f="today">النهاردة</span>
+      <span class="fil" data-f="late">متأخرة</span>
+      <span class="fil" data-f="wip">شغال عليها</span>
+    </div>
+    <div id="ctx"></div>
+    <div id="list"></div>
+    <div id="msg"></div>
+
+    <div id="settings">
+      <h3>وصّل طيف بجيرا</h3>
+      <div class="sub">
+        محتاجين API Token — <a id="tokenlink">افتح صفحة التوكنات</a> واعمل واحد جديد وانسخه.
+      </div>
+      <div class="sgrid">
+        <label for="ssite">الموقع</label>
+        <input id="ssite" spellcheck="false" placeholder="your-company.atlassian.net" />
+        <label for="semail">الإيميل</label>
+        <input id="semail" spellcheck="false" placeholder="الإيميل بتاعك على جيرا" />
+        <label for="stoken">التوكن</label>
+        <input id="stoken" type="password" spellcheck="false" placeholder="الصق الـ API Token" />
+      </div>
+      <div id="snote"></div>
+    </div>
+
+    <div id="view">
+      <div id="vtitle"></div>
+      <div id="vmeta"></div>
+      <div id="vdesc"></div>
+    </div>
+
+    <div id="create">
+      <div class="cgrid">
+        <label for="cboard" id="lblboard">البورد</label>
+        <div class="combo" id="cboardwrap">
+          <input id="cboard" class="cinput" spellcheck="false" autocomplete="off" placeholder="اكتب للبحث…" />
+          <div id="cboardlist" class="clist"></div>
+        </div>
+
+        <label for="ctype" id="lbltype">النوع</label>
+        <select id="ctype"></select>
+
+        <label for="cassignee" id="lblassignee">مسندة لـ</label>
+        <div class="combo" id="cassigneewrap">
+          <input id="cassignee" class="cinput" spellcheck="false" autocomplete="off" placeholder="اكتب للبحث…" />
+          <div id="cassigneelist" class="clist"></div>
+        </div>
+
+        <label for="cdue" id="lbldue">التسليم</label>
+        <div id="duewrap">
+          <input id="cdue" spellcheck="false" placeholder="اكتب أو اختار من تحت · Tab بيكمّل" />
+          <div id="chips"></div>
+        </div>
+
+        <label for="cest" id="lblest">الوقت المتوقع</label>
+        <input id="cest" spellcheck="false" placeholder="اكتب رقم بالدقايق أو 4h · 2d" />
+
+        <label for="cdescin" id="lbldescin" class="top">الوصف</label>
+        <textarea id="cdescin" rows="3" spellcheck="false" placeholder="اختياري"></textarea>
+      </div>
+      <div id="cnote"></div>
+      <div id="cdesc"></div>
+    </div>
+
+    <div id="finish">
+      <div id="ftask"></div>
+      <div class="cgrid">
+        <label for="fres" id="lblfres">سبب الإغلاق</label>
+        <select id="fres"></select>
+
+        <label for="ftime" id="lblftime">الوقت اللي خد</label>
+        <input id="ftime" spellcheck="false" placeholder="اكتب رقم بالدقايق أو 1h 30m" />
+        <div id="fest"></div>
+      </div>
+      <div id="fnote"></div>
+    </div>
+
+    <div id="foot">
+      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> تنقل</span>
+      <span><kbd>&rarr;</kbd> خيارات التاسك</span>
+      <span><kbd>Enter</kbd> عرض التاسك</span>
+      <span><kbd>Tab</kbd> غيّر الحالة</span>
+      <span><kbd>Esc</kbd> اقفل</span>
+      <span id="meta"></span>
+    </div>
+    <div id="foots">
+      <span><kbd>Tab</kbd> تنقل</span>
+      <span><kbd>Enter</kbd> احفظ واتأكد</span>
+      <span><kbd>Esc</kbd> اقفل</span>
+      <span id="metas"></span>
+    </div>
+    <div id="footv">
+      <span><kbd>E</kbd> تعديل</span>
+      <span><kbd>S</kbd> غيّر الحالة</span>
+      <span><kbd>Ctrl O</kbd> جيرا</span>
+      <span><kbd>Esc</kbd> رجوع</span>
+      <span id="metav"></span>
+    </div>
+    <div id="footd">
+      <span><kbd>Tab</kbd> تنقل</span>
+      <span><kbd>Enter</kbd> احفظ</span>
+      <span><kbd>Ctrl Enter</kbd> من جوه الوصف</span>
+      <span><kbd>Ctrl O</kbd> جيرا</span>
+      <span><kbd>Esc</kbd> رجوع</span>
+      <span id="metad"></span>
+    </div>
+    <div id="footc">
+      <span><kbd>Tab</kbd> تنقل</span>
+      <span><kbd>Enter</kbd> اعمل التاسك</span>
+      <span><kbd>Ctrl Enter</kbd> من جوه الوصف</span>
+      <span><kbd>Esc</kbd> رجوع</span>
+      <span id="metac"></span>
+    </div>
+    <div id="footf">
+      <span><kbd>Tab</kbd> تنقل</span>
+      <span><kbd>Enter</kbd> غيّر الحالة</span>
+      <span><kbd>Esc</kbd> رجوع</span>
+      <span id="metaf"></span>
+    </div>
+  </div>
+  <div id="actions"></div>
+</div>
+</body>
+</html>

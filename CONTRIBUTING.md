@@ -1,0 +1,88 @@
+# Contributing
+
+*[بالعربي](CONTRIBUTING.ar.md)*
+
+## Getting it running
+
+Node 22 or newer.
+
+```bash
+npm install
+cp config.example.json config.json   # fill in site, email, API token
+npm start
+```
+
+`config.json` is gitignored. Get an API token from
+[id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
+
+If the connection fails, `npm run check-config` tells you what is wrong with the
+file without printing your token.
+
+```bash
+npm test          # unit tests (node:test, no dependencies)
+npm run lint      # eslint
+npm run dist      # package for the current platform
+```
+
+There is **no build step**. The renderer is plain ES modules that Electron loads
+directly, so what you edit is what runs.
+
+## Before you change anything
+
+Read [docs/architecture.md](docs/architecture.md) — five minutes, and it explains the
+layer rule that the whole codebase depends on.
+
+Then read [docs/jira-quirks.md](docs/jira-quirks.md). The code has no comments by
+design, so every piece of "why is this written so strangely" knowledge lives there.
+Several of those workarounds look removable and are not.
+
+## House rules
+
+**No comments.** The code should explain itself through names and small functions. If
+something genuinely cannot be made obvious — an API that misbehaves, a platform
+quirk — it belongs in `docs/jira-quirks.md`, not in a comment above the line.
+
+**Identifiers and documentation in English.** User-facing strings stay in Arabic for
+now; main-process strings live in `src/strings.js`.
+
+**Respect the layer rule.** `renderer → preload → main → app → providers/storage`.
+In particular: no Jira-shaped data (ADF, raw `customfield_*` payloads, Jira JSON)
+may leave `src/providers/`, and the renderer may not import anything but its own
+modules and `window.tayf`.
+
+**Errors carry codes, not sentences.** Providers throw `JiraError` with a `code`.
+Display text is looked up in `src/strings.js` at the IPC boundary. This is what keeps
+translation to a single file.
+
+**Test the pure parts.** Anything without I/O — parsing, mapping, date handling —
+should have tests. Anything that touches the network usually should not.
+
+## Adding things
+
+**A new provider (GitHub, Azure DevOps, …):** add `src/providers/<name>/` exposing the
+same surface as `JiraProvider`, and construct it in `src/main/index.js → connectProvider`.
+Nothing above the provider layer should need to change. See
+[ADR-0002](docs/adr/0002-provider-abstraction.md).
+
+**Linux support:** add `src/main/platform/linux.js` implementing the same shape as
+`windows.js` / `macos.js`, and select it in `platform/index.js`. The interesting part
+is focus restoration — read the Windows section of the quirks doc first.
+
+**A new screen:** create `src/renderer/screens/<name>.js` exporting
+`{ name, enter, leave, render }`, add its layout to `SCREEN_PARTS` in `chrome.js`,
+register it in `app.js`, and add a key handler in `keyboard.js` if it needs one.
+
+## Pull requests
+
+- One concern per PR.
+- `npm test` and `npm run lint` pass.
+- If you changed behaviour, say so explicitly — this tool is used daily and silent
+  behaviour changes are worse than bugs.
+- If you worked around something Jira or an OS does wrong, add it to
+  `docs/jira-quirks.md` in the same PR. That file is the point.
+
+## Reporting bugs
+
+Include your OS, whether it is a dev run or a packaged build, and the relevant part of
+the error log (tray icon → **سجل الأخطاء**). **Never paste your API token** — the log
+does not contain it, and neither should your issue.
