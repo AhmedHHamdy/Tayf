@@ -26,6 +26,7 @@
     "dist:mac": "electron-builder --mac"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "koffi": "^3.1.6"
   },
   "devDependencies": {

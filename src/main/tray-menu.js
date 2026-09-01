@@ -18,8 +18,18 @@ function withHotkey(label, accelerator) {
   return accelerator ? `${label}  (${platform.hotkeyLabel(accelerator)})` : label;
 }
 
-function createTrayMenu({ workspace, hotkeys, actions }) {
+function createTrayMenu({ workspace, hotkeys, actions, updates }) {
   let tray = null;
+
+  function updateItems() {
+    if (!updates || !updates.supported) return [];
+    const { checking, downloading, ready, version } = updates.state;
+
+    if (ready) return [{ label: TRAY_TEXT.updateReady(version), click: actions.installUpdate }];
+    if (downloading) return [{ label: TRAY_TEXT.downloadingUpdate, enabled: false }];
+    if (checking) return [{ label: TRAY_TEXT.checkingUpdates, enabled: false }];
+    return [{ label: TRAY_TEXT.checkUpdates, click: actions.checkUpdates }];
+  }
 
   function template() {
     const state = workspace.state;
@@ -57,6 +67,7 @@ function createTrayMenu({ workspace, hotkeys, actions }) {
       { label: TRAY_TEXT.settings, click: actions.openSettings },
       { label: TRAY_TEXT.errorLog, click: actions.revealLog },
       { label: TRAY_TEXT.openConfigFile, click: actions.revealConfig },
+      ...updateItems(),
       { label: TRAY_TEXT.restart, click: actions.restart },
       { label: TRAY_TEXT.quit, click: actions.quit }
     ];

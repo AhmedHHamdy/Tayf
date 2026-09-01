@@ -32,7 +32,11 @@ const TRAY_TEXT = {
   restart: 'إعادة تشغيل',
   quit: 'خروج',
   startWithWindows: 'يشتغل مع ويندوز',
-  startWithMac: 'يشتغل مع الماك'
+  startWithMac: 'يشتغل مع الماك',
+  checkUpdates: 'شوف لو فيه تحديث',
+  checkingUpdates: 'بيدوّر على تحديث…',
+  downloadingUpdate: 'بينزّل التحديث…',
+  updateReady: (version) => `تحديث ${version} جاهز — سطّبه دلوقتي`
 };
 
 const NOTIFICATION_TEXT = {
