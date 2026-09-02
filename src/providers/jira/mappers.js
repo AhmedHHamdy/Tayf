@@ -33,7 +33,8 @@ function toWorkItem(issue) {
     estimate: tracking.originalEstimate || null,
     spent: tracking.timeSpent || null,
     spentSeconds: fields.aggregatetimespent || tracking.timeSpentSeconds || 0,
-    updated: fields.updated || null
+    updated: fields.updated || null,
+    categoryChangedAt: fields.statuscategorychangedate || null
   };
 }
 

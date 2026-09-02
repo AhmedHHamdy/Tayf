@@ -3,6 +3,24 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Added
+
+- **Nudges.** Tayf now tells you when the board has drifted from the work: nothing is In
+  Progress while you are clearly at the machine, or something has been In Progress past
+  its welcome. Clicking a nudge opens the list so the fix is one keystroke away. The
+  behaviour is the one written down in [docs/nudges.md](docs/nudges.md), and the policy
+  itself is a pure function in `src/app/nudges.js` with 14 tests covering every case
+  where it must stay quiet.
+- A **النكزات** section in settings for all of it: on/off, how often, how long without a
+  keystroke counts as away, working hours, working days, and when a task counts as stale.
+- **Snooze**, in the tray: an hour, until tomorrow morning, or back on. Without it the
+  system would be hostile, and a hostile reminder gets switched off for good.
+- `categoryChangedAt` on work items, from Jira's `statuscategorychangedate`. It rides
+  along on the list request that already runs, and it is what makes "in progress since"
+  mean something — `updated` moves whenever anyone touches the issue.
+
 ## [0.5.0] - 2026-09-02
 
 ### Changed

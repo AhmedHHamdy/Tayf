@@ -5,9 +5,13 @@ import { escapeHtml } from '../format.js';
 import { backToTaskList } from './task-list.js';
 
 const CLOSE_DELAY_MS = 900;
-const TABS = ['conn', 'gen'];
-const PANES = { conn: 'pconn', gen: 'pgen' };
+const TABS = ['conn', 'nudge', 'gen'];
+const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen' };
 const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
+const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
+const EVERY_CHOICES = [5, 10, 15, 20, 30, 45, 60];
+const IDLE_CHOICES = [3, 5, 10, 15, 20, 30];
+const STALE_CHOICES = [1, 2, 3, 5, 7];
 
 let saving = false;
 let activeTab = 'conn';
@@ -26,12 +30,43 @@ function fillChoices(select, choices, current) {
     .join('');
 }
 
+function fillNumbers(select, values, current, unit) {
+  select.innerHTML = values
+    .map((value) => {
+      const selected = value === current ? ' selected' : '';
+      return `<option value="${value}"${selected}>${value} ${unit}</option>`;
+    })
+    .join('');
+}
+
+function paintDays(days) {
+  elements.snudgedays.innerHTML = DAY_LETTERS.map((letter, index) => {
+    const on = days.includes(index) ? ' on' : '';
+    return `<span class="sday${on}" data-d="${index}">${letter}</span>`;
+  }).join('');
+}
+
+function chosenDays() {
+  return [...elements.snudgedays.querySelectorAll('.sday.on')].map((chip) =>
+    Number(chip.dataset.d)
+  );
+}
+
 function paintPreferences(preferences) {
   fillChoices(elements.shotkey, preferences.toggleChoices, preferences.toggleHotkey);
   fillChoices(elements.saddkey, preferences.composeChoices, preferences.composeHotkey);
   elements.sauto.checked = !!preferences.autoStart;
   elements.sautotext.textContent =
     AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
+
+  const nudges = preferences.nudges || {};
+  elements.snudge.checked = !!nudges.enabled;
+  fillNumbers(elements.snudgeevery, EVERY_CHOICES, nudges.everyMinutes, 'دقيقة');
+  fillNumbers(elements.snudgeidle, IDLE_CHOICES, nudges.idleMinutes, 'دقيقة');
+  elements.snudgestart.value = nudges.workStart || '';
+  elements.snudgeend.value = nudges.workEnd || '';
+  fillNumbers(elements.snudgestale, STALE_CHOICES, nudges.staleDays, 'يوم');
+  paintDays(nudges.workDays || []);
 }
 
 function refused(requested, registered, choices) {
@@ -143,3 +178,34 @@ elements.saddkey.addEventListener('change', () =>
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
+
+const saveNudge = (patch) => savePreference({ nudges: patch });
+
+elements.snudge.addEventListener('change', () => saveNudge({ enabled: elements.snudge.checked }));
+elements.snudgeevery.addEventListener('change', () =>
+  saveNudge({ everyMinutes: Number(elements.snudgeevery.value) })
+);
+elements.snudgeidle.addEventListener('change', () =>
+  saveNudge({ idleMinutes: Number(elements.snudgeidle.value) })
+);
+elements.snudgestale.addEventListener('change', () =>
+  saveNudge({ staleDays: Number(elements.snudgestale.value) })
+);
+elements.snudgestart.addEventListener('change', () => {
+  if (elements.snudgestart.value) saveNudge({ workStart: elements.snudgestart.value });
+});
+elements.snudgeend.addEventListener('change', () => {
+  if (elements.snudgeend.value) saveNudge({ workEnd: elements.snudgeend.value });
+});
+elements.snudgedays.addEventListener('click', (event) => {
+  const chip = event.target.closest('.sday');
+  if (!chip) return;
+
+  const day = Number(chip.dataset.d);
+  const days = chosenDays();
+  const next = days.includes(day)
+    ? days.filter((chosen) => chosen !== day)
+    : [...days, day].sort((first, second) => first - second);
+
+  saveNudge({ workDays: next });
+});

@@ -33,10 +33,26 @@ const TRAY_TEXT = {
   quit: 'خروج',
   startWithWindows: 'يشتغل مع ويندوز',
   startWithMac: 'يشتغل مع الماك',
+  nudges: 'النكزات',
+  nudgeSnoozeHour: 'سكّت ساعة',
+  nudgeSnoozeTomorrow: 'سكّت لحد بكرة',
+  nudgeWake: 'رجّعها تنكز',
+  nudgeSnoozedUntil: (time) => `ساكتة لحد ${time}`,
   checkUpdates: 'شوف لو فيه تحديث',
   checkingUpdates: 'بيدوّر على تحديث…',
   downloadingUpdate: 'بينزّل التحديث…',
   updateReady: (version) => `تحديث ${version} جاهز — سطّبه دلوقتي`
+};
+
+const NUDGE_TEXT = {
+  nothingInProgress: (count) => ({
+    title: 'طيف — مفيش تاسك شغال عليها',
+    body: `عندك ${count} تاسك مفتوحة ومفيش ولا واحدة In Progress. دوس هنا وحرّك واحدة.`
+  }),
+  stale: (key, days) => ({
+    title: `طيف — ${key} قاعدة من ${days} يوم`,
+    body: 'لسه In Progress. لو خلصت اقفلها، ولو مش شغال عليها رجّعها.'
+  })
 };
 
 const NOTIFICATION_TEXT = {
@@ -56,4 +72,4 @@ function errorText(error) {
   return known;
 }
 
-module.exports = { ERROR_TEXT, TRAY_TEXT, NOTIFICATION_TEXT, errorText };
+module.exports = { ERROR_TEXT, TRAY_TEXT, NUDGE_TEXT, NOTIFICATION_TEXT, errorText };

@@ -14,12 +14,37 @@ const { OverlayWindow } = require('./overlay-window');
 const { createHotkeys } = require('./hotkeys');
 const { createTrayMenu } = require('./tray-menu');
 const { createUpdates } = require('./updates');
+const { createNudges } = require('./nudges');
 const { relaunch } = require('./relaunch');
 const ipc = require('./ipc');
 const { NOTIFICATION_TEXT } = require('../strings');
 
 const REFRESH_INTERVAL_MS = 60_000;
 const OPEN_TIME_BUDGET_MS = 500;
+
+const NUDGE_KEYS = {
+  enabled: 'nudgesEnabled',
+  everyMinutes: 'nudgeEveryMinutes',
+  idleMinutes: 'nudgeIdleMinutes',
+  workStart: 'nudgeWorkStart',
+  workEnd: 'nudgeWorkEnd',
+  workDays: 'nudgeWorkDays',
+  staleDays: 'nudgeStaleDays'
+};
+
+function readNudges(settings) {
+  return Object.fromEntries(
+    Object.entries(NUDGE_KEYS).map(([name, key]) => [name, settings.get(key)])
+  );
+}
+
+function storedNudges(patch) {
+  return Object.fromEntries(
+    Object.entries(patch)
+      .filter(([name]) => NUDGE_KEYS[name])
+      .map(([name, value]) => [NUDGE_KEYS[name], value])
+  );
+}
 
 function hotkeyChoices(accelerators) {
   return accelerators.map((accelerator) => ({
@@ -56,6 +81,12 @@ function start() {
   });
 
   const updates = createUpdates({ log, onChange: () => tray.update() });
+  const nudges = createNudges({
+    workspace,
+    settings,
+    log,
+    onOpen: () => openOverlay('list')
+  });
 
   const actions = {
     toggle: toggleOverlay,
@@ -69,17 +100,31 @@ function start() {
     revealConfig: () => tray.reveal(credentials.ensureFile()),
     checkUpdates: () => updates.check(),
     installUpdate: () => updates.install(),
+    snoozeNudgesHour: () => {
+      nudges.snoozeForAnHour();
+      tray.update();
+    },
+    snoozeNudgesTomorrow: () => {
+      nudges.snoozeUntilTomorrow();
+      tray.update();
+    },
+    wakeNudges: () => {
+      nudges.wake();
+      tray.update();
+    },
     readPreferences: () => ({
       toggleHotkey: hotkeys.toggle,
       composeHotkey: hotkeys.compose,
       toggleChoices: hotkeyChoices(platform.toggleHotkeys),
       composeChoices: hotkeyChoices(platform.composeHotkeys),
-      autoStart: autostart.isEnabled()
+      autoStart: autostart.isEnabled(),
+      nudges: readNudges(settings)
     }),
     savePreferences: (patch) => {
       if (patch.toggleHotkey) hotkeys.choose(patch.toggleHotkey);
       if (patch.composeHotkey) hotkeys.chooseCompose(patch.composeHotkey);
       if (typeof patch.autoStart === 'boolean') autostart.setEnabled(patch.autoStart);
+      if (patch.nudges) settings.remember(storedNudges(patch.nudges));
       tray.update();
       return actions.readPreferences();
     },
@@ -96,7 +141,7 @@ function start() {
     }
   };
 
-  const tray = createTrayMenu({ workspace, hotkeys, actions, updates });
+  const tray = createTrayMenu({ workspace, hotkeys, actions, updates, nudges });
 
   function connectProvider() {
     const stored = credentials.read();
@@ -125,6 +170,7 @@ function start() {
   hotkeys.register();
   tray.create();
   updates.start();
+  nudges.start();
 
   workspace.refresh();
   setInterval(() => workspace.refresh(), REFRESH_INTERVAL_MS);
@@ -134,5 +180,6 @@ function start() {
   app.on('will-quit', () => {
     hotkeys.releaseAll();
     updates.stop();
+    nudges.stop();
   });
 }
