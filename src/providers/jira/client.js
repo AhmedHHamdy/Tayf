@@ -1,5 +1,7 @@
 'use strict';
 
+const DETAIL_LIMIT = 600;
+
 class JiraError extends Error {
   constructor(code, status, detail) {
     super(`${code}${status ? ` (${status})` : ''}${detail ? `: ${detail}` : ''}`);
@@ -44,7 +46,7 @@ class JiraClient {
     if (!response.ok) {
       let detail = '';
       try {
-        detail = (await response.text()).slice(0, 160);
+        detail = (await response.text()).slice(0, DETAIL_LIMIT);
       } catch {
         detail = '';
       }

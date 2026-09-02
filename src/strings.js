@@ -8,6 +8,7 @@ const ERROR_TEXT = {
   'rate-limited': 'Jira قال استنى شوية (rate limit). جرّب كمان لحظة.',
   'jira-unavailable': 'Jira نفسه واقع دلوقتي.',
   'unexpected-response': 'Jira رجّع رد مش متوقع.',
+  rejected: 'Jira رفض الطلب:',
   'not-configured': 'مفيش إعدادات — افتح الإعدادات وحطّ بيانات Jira.',
   'save-failed': 'مقدرناش نحفظ الإعدادات.',
   'site-required': 'اكتب اسم الموقع',
@@ -85,6 +86,26 @@ const NOTIFICATION_TEXT = {
   createFailed: (reason) => `التاسك ماتعملتش — ${reason}`
 };
 
+function jiraComplaints(detail) {
+  const text = String(detail || '').trim();
+  if (!text) return '';
+
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    return text;
+  }
+
+  return [
+    ...(Array.isArray(body.errorMessages) ? body.errorMessages : []),
+    ...Object.values(body.errors || {})
+  ]
+    .map((one) => String(one).trim())
+    .filter(Boolean)
+    .join('  ·  ');
+}
+
 function errorText(error) {
   if (!error) return ERROR_TEXT['unexpected-response'];
   const known = ERROR_TEXT[error.code];
@@ -92,7 +113,11 @@ function errorText(error) {
   if (error.code === 'jira-unavailable' && error.status) {
     return `${known} (${error.status})`;
   }
+  if (error.code === 'unexpected-response') {
+    const complaints = jiraComplaints(error.detail);
+    if (complaints) return `${ERROR_TEXT.rejected} ${complaints}`;
+  }
   return known;
 }
 
-module.exports = { ERROR_TEXT, TRAY_TEXT, NUDGE_TEXT, NOTIFICATION_TEXT, errorText };
+module.exports = { ERROR_TEXT, TRAY_TEXT, NUDGE_TEXT, NOTIFICATION_TEXT, errorText, jiraComplaints };
