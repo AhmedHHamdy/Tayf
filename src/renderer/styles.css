@@ -312,6 +312,16 @@
   .sctl input[type="checkbox"] {
     width: 16px; height: 16px; padding: 0; accent-color: var(--accent); cursor: pointer;
   }
+  .stimes { display: flex; gap: 8px; }
+  .stimes input { text-align: center; }
+  .sdays { display: flex; gap: 5px; justify-content: flex-start; }
+  .sday {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: var(--fill-3); border: 1px solid var(--line);
+    border-radius: 5px; width: 30px; padding: 5px 0; text-align: center; cursor: pointer;
+  }
+  .sday:hover { color: var(--text); }
+  .sday.on { background: var(--accent-bg); border-color: var(--accent-line); color: var(--accent); }
   #snote { min-height: 18px; padding: 14px 2px 2px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
   #snote.bad { color: var(--bad); }
   #snote.good { color: var(--good); }

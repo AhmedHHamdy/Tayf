@@ -11,6 +11,7 @@ const LIST_FIELDS = [
   'priority',
   'issuetype',
   'updated',
+  'statuscategorychangedate',
   'duedate',
   'assignee',
   'timetracking',
