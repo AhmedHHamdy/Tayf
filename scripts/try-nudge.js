@@ -4,22 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const { app, Notification, powerMonitor } = require('electron');
 
-const { decide, withinWorkingHours, overdueBy } = require('../src/app/nudges');
+const { decide, withinWorkingHours, overdueBy, isWorking } = require('../src/app/nudges');
+const { NUDGE_KEYS } = require('../src/storage/settings');
 const { NUDGE_TEXT } = require('../src/strings');
-
-const NUDGE_KEYS = {
-  enabled: 'nudgesEnabled',
-  everyMinutes: 'nudgeEveryMinutes',
-  idleMinutes: 'nudgeIdleMinutes',
-  workStart: 'nudgeWorkStart',
-  workEnd: 'nudgeWorkEnd',
-  workDays: 'nudgeWorkDays',
-  overdueEnabled: 'nudgeOverdueEnabled',
-  overdueDays: 'nudgeOverdueDays',
-  checkEnabled: 'nudgeCheckEnabled',
-  checkMinutes: 'nudgeCheckMinutes',
-  snoozeUntil: 'nudgeSnoozeUntil'
-};
 
 const TEXT_FOR = {
   'nothing-in-progress': (decision) => NUDGE_TEXT.nothingInProgress(decision.count),
@@ -94,11 +81,12 @@ function reportItems(open, settings, now) {
   open.forEach((one) => {
     const since = Date.parse(one.categoryChangedAt || one.updated || '') || null;
     const late = overdueBy(one, at, settings.overdueDays);
-    const running =
-      one.category === 'indeterminate' && since ? `in progress ${spellGap(at - since)}` : '';
+    const mine = isWorking(one, settings.workingStatuses);
+    const running = mine && since ? `in progress ${spellGap(at - since)}` : '';
 
     console.log(
-      `  ${one.key.padEnd(10)} ${String(one.category).padEnd(14)} ${(one.due || 'no date').padEnd(11)} ` +
+      `  ${one.key.padEnd(10)} ${(mine ? 'in hand' : String(one.status || one.category)).padEnd(22)} ` +
+        `${(one.due || 'no date').padEnd(11)} ` +
         `${(late ? `${late} days late` : '').padEnd(14)} ${running}`
     );
   });
@@ -137,9 +125,11 @@ function everyKind(items, idleSeconds, now, settings) {
 
 function main() {
   const folder = app.getPath('userData');
-  const settings = Object.fromEntries(
-    Object.entries(NUDGE_KEYS).map(([name, key]) => [name, readJson(path.join(folder, 'settings.json'), {})[key]])
-  );
+  const stored = readJson(path.join(folder, 'settings.json'), {});
+  const settings = {
+    ...Object.fromEntries(Object.entries(NUDGE_KEYS).map(([name, key]) => [name, stored[key]])),
+    snoozeUntil: stored.nudgeSnoozeUntil
+  };
   const cache = readJson(path.join(folder, 'cache.json'), { issues: [] });
   const items = cache.issues || [];
   const now = new Date();

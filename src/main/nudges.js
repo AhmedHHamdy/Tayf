@@ -33,6 +33,7 @@ function createNudges({ workspace, settings, log, onOpen }) {
       workStart: settings.get('nudgeWorkStart'),
       workEnd: settings.get('nudgeWorkEnd'),
       workDays: settings.get('nudgeWorkDays'),
+      workingStatuses: settings.get('nudgeWorkingStatuses'),
       overdueEnabled: settings.get('nudgeOverdueEnabled'),
       overdueDays: settings.get('nudgeOverdueDays'),
       checkEnabled: settings.get('nudgeCheckEnabled'),

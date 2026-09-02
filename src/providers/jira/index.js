@@ -97,6 +97,10 @@ class JiraProvider {
     return metadata.fetchAssignableUsers(this.client, projectKey);
   }
 
+  statuses(projectKey) {
+    return metadata.fetchStatuses(this.client, projectKey);
+  }
+
   createFields(projectKey, typeId) {
     return metadata.fetchCreateFields(this.client, projectKey, typeId);
   }

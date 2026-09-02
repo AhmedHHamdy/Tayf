@@ -8,9 +8,10 @@ function notConfigured() {
   return { error: ERROR_TEXT['not-configured'] };
 }
 
-function serialiseState(state) {
+function serialiseState(state, workingStatuses) {
   return {
     ...state,
+    workingStatuses: workingStatuses || null,
     error: state.error ? errorText(state.error) : null
   };
 }
@@ -38,7 +39,9 @@ function register({ workspace, overlay, settings, actions }) {
     if (provider()) shell.openExternal(provider().itemUrl(key));
   });
 
-  ipcMain.handle('workspace:state', () => serialiseState(workspace.state));
+  ipcMain.handle('workspace:state', () =>
+    serialiseState(workspace.state, settings.get('nudgeWorkingStatuses'))
+  );
 
   ipcMain.handle('item:transitions', (_event, key) =>
     fromProvider(
@@ -135,6 +138,24 @@ function register({ workspace, overlay, settings, actions }) {
     fromProvider(
       (jira) => jira.assignableUsers(projectKey),
       (users) => ({ users, currentUserId: workspace.state.user && workspace.state.user.accountId })
+    )
+  );
+
+  ipcMain.handle('meta:statuses', () =>
+    fromProvider(
+      async (jira) => {
+        const onBoard = (workspace.state.items || [])
+          .map((item) => item.projectKey)
+          .filter(Boolean);
+        const fallback = [settings.get('lastProjectKey')].filter(Boolean);
+        const keys = [...new Set(onBoard.length ? onBoard : fallback)];
+        const lists = await Promise.all(keys.map((key) => jira.statuses(key)));
+
+        const byName = new Map();
+        lists.flat().forEach((status) => byName.set(status.name, status));
+        return [...byName.values()];
+      },
+      (statuses) => ({ statuses, working: settings.get('nudgeWorkingStatuses') })
     )
   );
 

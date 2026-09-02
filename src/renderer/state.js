@@ -6,13 +6,20 @@ export const state = {
     items: [],
     fetchedAt: null,
     user: null,
-    transitionsNeedingWorklog: []
+    transitionsNeedingWorklog: [],
+    workingStatuses: null
   },
   rows: [],
   selectedIndex: 0,
   filter: 'all',
   busy: false
 };
+
+export function isInHand(item) {
+  const statuses = state.workspace.workingStatuses;
+  if (!Array.isArray(statuses) || !statuses.length) return item.category === 'indeterminate';
+  return item.category !== 'done' && statuses.includes(item.status);
+}
 
 export function setWorkspace(next) {
   state.workspace = next;

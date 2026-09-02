@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('tayf', {
   issueTypes: (projectKey) => ipcRenderer.invoke('meta:issueTypes', projectKey),
   assignableUsers: (projectKey) => ipcRenderer.invoke('meta:assignableUsers', projectKey),
   createFields: (request) => ipcRenderer.invoke('meta:createFields', request),
+  statuses: () => ipcRenderer.invoke('meta:statuses'),
 
   readConfig: () => ipcRenderer.invoke('config:get'),
   saveConfig: (candidate) => ipcRenderer.invoke('config:save', candidate),

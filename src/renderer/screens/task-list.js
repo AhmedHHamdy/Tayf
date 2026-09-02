@@ -1,5 +1,5 @@
 import elements from '../elements.js';
-import { state, clampSelection } from '../state.js';
+import { state, clampSelection, isInHand } from '../state.js';
 import { goTo } from '../navigation.js';
 import { showLayout, setContext, paintBanners, setFooterMeta, itemCountMeta } from '../chrome.js';
 import { paintRows, itemRowHtml } from '../list-view.js';
@@ -20,7 +20,7 @@ const MATCHES_FILTER = {
   all: () => true,
   today: (item, today) => !!item.due && item.due <= today,
   late: (item, today) => !!item.due && item.due < today,
-  wip: (item) => item.category === 'indeterminate'
+  wip: (item) => isInHand(item)
 };
 
 export function visibleItems() {

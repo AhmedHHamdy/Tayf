@@ -2,6 +2,7 @@
 
 const MINUTE_MS = 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const NEW = 'new';
 const IN_PROGRESS = 'indeterminate';
 const DONE = 'done';
 const CLOCK = /^(\d{1,2}):(\d{2})$/;
@@ -27,6 +28,13 @@ function withinWorkingHours(now, settings) {
 
   const minutes = now.getHours() * 60 + now.getMinutes();
   return start <= end ? minutes >= start && minutes < end : minutes >= start || minutes < end;
+}
+
+function isWorking(item, workingStatuses) {
+  if (!Array.isArray(workingStatuses) || !workingStatuses.length) {
+    return item.category === IN_PROGRESS;
+  }
+  return item.category !== DONE && workingStatuses.includes(item.status);
 }
 
 function inProgressSince(item) {
@@ -77,11 +85,13 @@ function decide({ items, idleSeconds, now, settings, history }) {
     };
   }
 
-  const working = open.filter((item) => item.category === IN_PROGRESS);
+  const working = open.filter((item) => isWorking(item, settings.workingStatuses));
+  const startable = open.filter((item) => item.category === NEW);
 
   if (!working.length) {
+    if (!startable.length) return null;
     if (at - (history.idleAt || 0) < settings.everyMinutes * MINUTE_MS) return null;
-    return { kind: 'nothing-in-progress', count: open.length };
+    return { kind: 'nothing-in-progress', count: startable.length };
   }
 
   if (!settings.checkEnabled) return null;
@@ -103,4 +113,4 @@ function decide({ items, idleSeconds, now, settings, history }) {
   };
 }
 
-module.exports = { decide, withinWorkingHours, minutesOfDay, overdueBy, DAY_MS };
+module.exports = { decide, withinWorkingHours, minutesOfDay, overdueBy, isWorking, DAY_MS };

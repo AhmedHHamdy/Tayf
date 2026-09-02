@@ -50,6 +50,23 @@ about too, rather than falling silent with nobody watching them.
 
 A card with no due date is never late. Nothing to be late against.
 
+## What counts as work in your hands
+
+Jira sorts every status into three buckets, and the middle one — `indeterminate` — is
+where it puts everything that is neither new nor finished. On a real board that is nine
+statuses, and only one of them means you are actually doing the work. Ready For Testing,
+Testing In Progress, Ready For Build / Review: the ticket is moving, but it is moving in
+somebody else's hands, and you should be picking up the next thing.
+
+So the working statuses are a setting: name the ones that mean the ticket is yours, and
+everything else in that bucket is treated as handed off. Handed-off tickets are not
+"still on it?" material and they are not what "go move a card" is counting either — the
+count is what you could actually start. Name nothing and Tayf falls back to trusting
+Jira's bucket, which is what it did before this was configurable.
+
+A date that has passed still nudges, whoever is holding the ticket. It is still your name
+on it, and you can chase the tester or move the date.
+
 ## Every number here is a setting
 
 Fifteen minutes, ten minutes idle, 08:00–18:00, ninety minutes between check-ins, one day
