@@ -7,7 +7,7 @@ const autostart = require('./autostart');
 const credentials = require('../storage/credentials');
 const cache = require('../storage/cache');
 const log = require('../storage/log');
-const { createSettings } = require('../storage/settings');
+const { createSettings, NUDGE_KEYS } = require('../storage/settings');
 const { Workspace } = require('../app/workspace');
 const { JiraProvider } = require('../providers/jira');
 const { OverlayWindow } = require('./overlay-window');
@@ -21,19 +21,6 @@ const { NOTIFICATION_TEXT } = require('../strings');
 
 const REFRESH_INTERVAL_MS = 60_000;
 const OPEN_TIME_BUDGET_MS = 500;
-
-const NUDGE_KEYS = {
-  enabled: 'nudgesEnabled',
-  everyMinutes: 'nudgeEveryMinutes',
-  idleMinutes: 'nudgeIdleMinutes',
-  workStart: 'nudgeWorkStart',
-  workEnd: 'nudgeWorkEnd',
-  workDays: 'nudgeWorkDays',
-  overdueEnabled: 'nudgeOverdueEnabled',
-  overdueDays: 'nudgeOverdueDays',
-  checkEnabled: 'nudgeCheckEnabled',
-  checkMinutes: 'nudgeCheckMinutes'
-};
 
 function readNudges(settings) {
   return Object.fromEntries(
@@ -73,7 +60,7 @@ function start() {
   const overlay = new OverlayWindow({ onHidden: () => {} });
   overlay.create();
 
-  const openOverlay = (screen) => overlay.show({ state: ipc.serialiseState(workspace.state), screen });
+  const openOverlay = (screen) => overlay.show({ state: ipc.serialiseState(workspace.state, settings.get('nudgeWorkingStatuses')), screen });
   const toggleOverlay = () => (overlay.isVisible() ? overlay.hide() : openOverlay('list'));
 
   const hotkeys = createHotkeys({
@@ -152,7 +139,7 @@ function start() {
   }
 
   workspace.on('change', (state) => {
-    overlay.send('workspace:state', ipc.serialiseState(state));
+    overlay.send('workspace:state', ipc.serialiseState(state, settings.get('nudgeWorkingStatuses')));
     tray.update();
   });
 

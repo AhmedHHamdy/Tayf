@@ -3,6 +3,26 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Fixed
+
+- **A task handed to the testers no longer counts as work in your hands.** Jira files nine
+  of this board's statuses under `indeterminate`, and Tayf trusted the bucket — so Ready
+  For Testing and Testing In Progress read as "you are working on this". The result was the
+  nudge that matters most never firing: with five tickets sitting in test, Tayf never said
+  "nothing is In Progress, go pick something up", and it kept asking whether you were still
+  on a ticket that was somebody else's. Which statuses mean the ticket is yours is now a
+  setting; name none and it falls back to trusting Jira as before. A passed due date still
+  nudges whoever is holding it.
+- The **شغال عليها** filter in the list was reading the same bucket, and now follows the
+  same setting.
+
+### Changed
+
+- "Nothing is In Progress" counts what you could actually start, rather than everything that
+  is not closed, and stays quiet when there is nothing to start at all.
+
 ## [0.6.0] - 2026-09-02
 
 ### Added

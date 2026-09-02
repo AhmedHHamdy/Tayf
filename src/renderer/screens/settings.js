@@ -13,6 +13,9 @@ const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
 const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
 const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
 const OVERDUE_CHOICES = [1, 2, 3, 5, 7];
+const IN_PROGRESS = 'indeterminate';
+
+let boardStatuses = [];
 
 let saving = false;
 let activeTab = 'conn';
@@ -38,6 +41,28 @@ function fillNumbers(select, values, current, unit) {
       return `<option value="${value}"${selected}>${value} ${unit}</option>`;
     })
     .join('');
+}
+
+function paintStatuses(statuses, working) {
+  const candidates = (statuses || []).filter((status) => status.category === IN_PROGRESS);
+
+  if (!candidates.length) {
+    elements.snudgestatuses.innerHTML =
+      '<span class="sstatnote">مفيش حالات نعرضها — جرّب بعد ما يحمّل التاسكات.</span>';
+    return;
+  }
+
+  const chosen = Array.isArray(working) && working.length ? working : null;
+  elements.snudgestatuses.innerHTML = candidates
+    .map((status) => {
+      const on = !chosen || chosen.includes(status.name) ? ' on' : '';
+      return `<span class="sstat${on}" data-s="${escapeHtml(status.name)}">${escapeHtml(status.name)}</span>`;
+    })
+    .join('');
+}
+
+function chosenStatuses() {
+  return [...elements.snudgestatuses.querySelectorAll('.sstat.on')].map((chip) => chip.dataset.s);
 }
 
 function paintDays(days) {
@@ -158,6 +183,10 @@ export const settingsScreen = {
       : 'الصق الـ API Token';
 
     paintPreferences(await window.tayf.readPreferences());
+
+    const response = await window.tayf.statuses();
+    boardStatuses = response.error ? [] : response.statuses || [];
+    paintStatuses(boardStatuses, response.working);
     showTab(state.workspace.configured ? activeTab : 'conn');
   },
 
@@ -210,6 +239,21 @@ elements.snudgestart.addEventListener('change', () => {
 elements.snudgeend.addEventListener('change', () => {
   if (elements.snudgeend.value) saveNudge({ workEnd: elements.snudgeend.value });
 });
+elements.snudgestatuses.addEventListener('click', async (event) => {
+  const chip = event.target.closest('.sstat');
+  if (!chip) return;
+
+  const wasOn = chip.classList.contains('on');
+  if (wasOn && chosenStatuses().length === 1) {
+    setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
+    return;
+  }
+
+  chip.classList.toggle('on');
+  await saveNudge({ workingStatuses: chosenStatuses() });
+  paintStatuses(boardStatuses, chosenStatuses());
+});
+
 elements.snudgedays.addEventListener('click', (event) => {
   const chip = event.target.closest('.sday');
   if (!chip) return;

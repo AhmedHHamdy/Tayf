@@ -17,6 +17,7 @@ const SETTINGS = {
   workStart: '08:00',
   workEnd: '18:00',
   workDays: [TODAY],
+  workingStatuses: null,
   overdueEnabled: true,
   overdueDays: 1,
   checkEnabled: true,
@@ -36,6 +37,7 @@ function item(overrides) {
     key: 'TAYF-1',
     title: 'شغل',
     category: 'new',
+    status: 'Open',
     due: null,
     updated: new Date(NOW.getTime() - 60_000).toISOString(),
     categoryChangedAt: null,
@@ -258,6 +260,64 @@ test('reads a clock, and rejects nonsense', () => {
   assert.equal(minutesOfDay('24:00'), null);
   assert.equal(minutesOfDay('08:70'), null);
   assert.equal(minutesOfDay(''), null);
+});
+
+const IN_HAND = { ...SETTINGS, workingStatuses: ['In Progress'] };
+
+function handedOff(overrides) {
+  return item({
+    category: 'indeterminate',
+    status: 'Ready For Testing',
+    categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString(),
+    ...overrides
+  });
+}
+
+test('a task handed to the testers is not a task you are working on', () => {
+  const items = [handedOff({ key: 'TESTING' }), item({ key: 'TODO' })];
+
+  assert.equal(ask({ items }).kind, 'still-on-it');
+
+  const decision = ask({ items, settings: IN_HAND });
+  assert.equal(decision.kind, 'nothing-in-progress');
+  assert.equal(decision.count, 1);
+});
+
+test('the count is what you could pick up, not everything that is open', () => {
+  const items = [
+    handedOff({ key: 'A' }),
+    handedOff({ key: 'B', status: 'Testing In Progress' }),
+    item({ key: 'C' })
+  ];
+
+  assert.equal(ask({ items, settings: IN_HAND }).count, 1);
+});
+
+test('stays quiet when everything is with somebody else and there is nothing to start', () => {
+  assert.equal(ask({ items: [handedOff({})], settings: IN_HAND }), null);
+});
+
+test('a task actually in your hands is still asked about', () => {
+  const mine = handedOff({ key: 'MINE', status: 'In Progress' });
+
+  const decision = ask({ items: [mine], settings: IN_HAND });
+  assert.equal(decision.kind, 'still-on-it');
+  assert.equal(decision.key, 'MINE');
+});
+
+test('a date that passed still nudges even while the testers hold it', () => {
+  const late = handedOff({ key: 'LATE', due: daysAgo(3) });
+
+  const decision = ask({ items: [late], settings: IN_HAND });
+  assert.equal(decision.kind, 'overdue');
+  assert.equal(decision.key, 'LATE');
+});
+
+test('naming no status falls back to whatever Jira calls in progress', () => {
+  const testing = handedOff({});
+
+  assert.equal(ask({ items: [testing], settings: { ...SETTINGS, workingStatuses: [] } }).kind, 'still-on-it');
+  assert.equal(ask({ items: [testing], settings: { ...SETTINGS, workingStatuses: null } }).kind, 'still-on-it');
 });
 
 test('counts in Arabic, not in a running total of hours', () => {
