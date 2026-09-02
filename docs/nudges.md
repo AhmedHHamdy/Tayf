@@ -11,6 +11,7 @@ A board is only useful if it is true, and there are two ways yours lies:
 
 - you are working and nothing is In Progress — the board says you are idle, and you
   simply forgot to move the card
+- a card says In Progress but you finished it an hour ago and never closed it
 - a card has been In Progress since yesterday and you moved on without closing it
 
 Both are the same failure: the board drifts away from the work. Nobody fixes that by
@@ -34,13 +35,20 @@ the fix is always one keystroke away.
 Snooze is not a nice-to-have. An hour, until tomorrow, done for today. Without it the
 system is hostile and gets switched off, which costs more than never having built it.
 
-The stale case is quieter on purpose: a card left In Progress for more than a day earns
-one nudge a day, not one every fifteen minutes.
+While a card *is* In Progress, the question changes from "start something" to "are you
+still on this?" — asked every ninety minutes, and only once the card has been running
+that long, so picking up a task does not immediately get you asked about it.
+
+The stale case is quieter still: a card left In Progress for more than a day earns one
+nudge a day, not one every ninety minutes. It takes precedence when both apply, and the
+two are independent afterwards — being told a card is stale in the morning does not stop
+Tayf asking whether you are still on it in the afternoon. They are different questions.
 
 ## Every number here is a setting
 
-Fifteen minutes, ten minutes idle, 08:00–18:00, one day stale. Those are defaults, not
-rules — all of them are editable, because one company's hours are not everybody's.
+Fifteen minutes, ten minutes idle, 08:00–18:00, ninety minutes between check-ins, one day
+stale. Those are defaults, not rules — all of them are editable, and the check-in can be
+switched off on its own, because one company's hours are not everybody's.
 
 ## Where it lives
 

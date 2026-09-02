@@ -17,10 +17,13 @@ const SETTINGS = {
   workEnd: '18:00',
   workDays: [TODAY],
   staleDays: 1,
+  checkEnabled: true,
+  checkMinutes: 90,
   snoozeUntil: null
 };
 
-const QUIET = { idleAt: 0, staleAt: 0 };
+const QUIET = { idleAt: 0, staleAt: 0, checkAt: 0 };
+const MINUTE = 60_000;
 
 function item(overrides) {
   return {
@@ -96,9 +99,56 @@ test('waits out the interval between nudges', () => {
   assert.equal(ask({ history: older }).kind, 'nothing-in-progress');
 });
 
-test('says nothing while a task is genuinely in progress', () => {
+test('says nothing about a task you only just picked up', () => {
   const working = item({ category: 'indeterminate' });
   assert.equal(ask({ items: [working] }), null);
+});
+
+test('asks whether you are still on a task once it has run a while', () => {
+  const working = item({
+    key: 'TAYF-4',
+    category: 'indeterminate',
+    categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
+  });
+
+  const decision = ask({ items: [working] });
+  assert.equal(decision.kind, 'still-on-it');
+  assert.equal(decision.key, 'TAYF-4');
+  assert.equal(decision.minutes, 100);
+});
+
+test('does not ask again before the asking interval passes', () => {
+  const working = item({
+    category: 'indeterminate',
+    categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
+  });
+
+  const justAsked = { ...QUIET, checkAt: NOW.getTime() - 89 * MINUTE };
+  assert.equal(ask({ items: [working], history: justAsked }), null);
+
+  const asked = { ...QUIET, checkAt: NOW.getTime() - 90 * MINUTE };
+  assert.equal(ask({ items: [working], history: asked }).kind, 'still-on-it');
+});
+
+test('asking can be switched off on its own', () => {
+  const working = item({
+    category: 'indeterminate',
+    categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
+  });
+
+  assert.equal(ask({ items: [working], settings: { ...SETTINGS, checkEnabled: false } }), null);
+});
+
+test('a stale task earns the stale nudge first, and is still asked about later', () => {
+  const working = item({
+    category: 'indeterminate',
+    categoryChangedAt: new Date(NOW.getTime() - 2 * DAY_MS).toISOString()
+  });
+
+  assert.equal(ask({ items: [working] }).kind, 'stale');
+
+  const nudgedThisMorning = { ...QUIET, staleAt: NOW.getTime() - 60 * MINUTE };
+  assert.equal(ask({ items: [working], history: nudgedThisMorning }).kind, 'still-on-it');
 });
 
 test('nudges about a task that has sat in progress past the limit', () => {
@@ -122,8 +172,8 @@ test('nudges about the stalest task, and only once a day', () => {
 
   assert.equal(ask({ items }).key, 'B');
 
-  const nudgedThisMorning = { idleAt: 0, staleAt: NOW.getTime() - 60 * 60_000 };
-  assert.equal(ask({ items, history: nudgedThisMorning }), null);
+  const nudgedThisMorning = { ...QUIET, staleAt: NOW.getTime() - 60 * MINUTE };
+  assert.notEqual(ask({ items, history: nudgedThisMorning }).kind, 'stale');
 });
 
 test('falls back to the update time when Jira gives no category change date', () => {

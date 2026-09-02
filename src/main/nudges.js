@@ -9,8 +9,20 @@ const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const MORNING_FALLBACK = 8 * 60;
 
+const TEXT_FOR = {
+  'nothing-in-progress': (decision) => NUDGE_TEXT.nothingInProgress(decision.count),
+  stale: (decision) => NUDGE_TEXT.stale(decision.key, decision.days),
+  'still-on-it': (decision) => NUDGE_TEXT.stillOnIt(decision.key, decision.minutes)
+};
+
+const REMEMBER_AS = {
+  'nothing-in-progress': 'idleAt',
+  stale: 'staleAt',
+  'still-on-it': 'checkAt'
+};
+
 function createNudges({ workspace, settings, log, onOpen }) {
-  const history = { idleAt: 0, staleAt: 0 };
+  const history = { idleAt: 0, staleAt: 0, checkAt: 0 };
   let timer = null;
 
   function preferences() {
@@ -22,6 +34,8 @@ function createNudges({ workspace, settings, log, onOpen }) {
       workEnd: settings.get('nudgeWorkEnd'),
       workDays: settings.get('nudgeWorkDays'),
       staleDays: settings.get('nudgeStaleDays'),
+      checkEnabled: settings.get('nudgeCheckEnabled'),
+      checkMinutes: settings.get('nudgeCheckMinutes'),
       snoozeUntil: settings.get('nudgeSnoozeUntil')
     };
   }
@@ -29,10 +43,7 @@ function createNudges({ workspace, settings, log, onOpen }) {
   function show(decision) {
     if (!Notification.isSupported()) return;
 
-    const text =
-      decision.kind === 'stale'
-        ? NUDGE_TEXT.stale(decision.key, decision.days)
-        : NUDGE_TEXT.nothingInProgress(decision.count);
+    const text = TEXT_FOR[decision.kind](decision);
 
     try {
       const notification = new Notification({ title: text.title, body: text.body, silent: false });
@@ -52,8 +63,7 @@ function createNudges({ workspace, settings, log, onOpen }) {
       });
       if (!decision) return;
 
-      if (decision.kind === 'stale') history.staleAt = Date.now();
-      else history.idleAt = Date.now();
+      history[REMEMBER_AS[decision.kind]] = Date.now();
 
       log.appendLine(`nudge: ${decision.kind}${decision.key ? ` ${decision.key}` : ''}`);
       show(decision);

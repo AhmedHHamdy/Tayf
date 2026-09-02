@@ -33,10 +33,10 @@ function inProgressSince(item) {
   return Date.parse(item.categoryChangedAt || item.updated || '') || null;
 }
 
-function stalest(working, at, staleDays) {
+function longestRunning(working, at, minimumMs) {
   return working
     .map((item) => ({ item, since: inProgressSince(item) }))
-    .filter((entry) => entry.since && at - entry.since >= staleDays * DAY_MS)
+    .filter((entry) => entry.since && at - entry.since >= minimumMs)
     .sort((first, second) => first.since - second.since)[0];
 }
 
@@ -58,15 +58,29 @@ function decide({ items, idleSeconds, now, settings, history }) {
     return { kind: 'nothing-in-progress', count: open.length };
   }
 
-  const oldest = stalest(working, at, settings.staleDays);
-  if (!oldest) return null;
-  if (at - (history.staleAt || 0) < DAY_MS) return null;
+  const stale = longestRunning(working, at, settings.staleDays * DAY_MS);
+  if (stale && at - (history.staleAt || 0) >= DAY_MS) {
+    return {
+      kind: 'stale',
+      key: stale.item.key,
+      title: stale.item.title,
+      days: Math.floor((at - stale.since) / DAY_MS)
+    };
+  }
+
+  if (!settings.checkEnabled) return null;
+
+  const gap = settings.checkMinutes * MINUTE_MS;
+  if (at - (history.checkAt || 0) < gap) return null;
+
+  const running = longestRunning(working, at, gap);
+  if (!running) return null;
 
   return {
-    kind: 'stale',
-    key: oldest.item.key,
-    title: oldest.item.title,
-    days: Math.floor((at - oldest.since) / DAY_MS)
+    kind: 'still-on-it',
+    key: running.item.key,
+    title: running.item.title,
+    minutes: Math.floor((at - running.since) / MINUTE_MS)
   };
 }
 

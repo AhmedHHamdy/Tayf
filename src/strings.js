@@ -44,7 +44,17 @@ const TRAY_TEXT = {
   updateReady: (version) => `تحديث ${version} جاهز — سطّبه دلوقتي`
 };
 
+function spell(minutes) {
+  if (minutes < 60) return `${minutes} دقيقة`;
+  const hours = Math.floor(minutes / 60);
+  return hours === 1 ? 'ساعة' : hours === 2 ? 'ساعتين' : `${hours} ساعات`;
+}
+
 const NUDGE_TEXT = {
+  stillOnIt: (key, minutes) => ({
+    title: `طيف — ${key} لسه شغال عليها؟`,
+    body: `بقالها ${spell(minutes)} In Progress. لو خلصت اقفلها، ولو لسه سيبها وكمّل.`
+  }),
   nothingInProgress: (count) => ({
     title: 'طيف — مفيش تاسك شغال عليها',
     body: `عندك ${count} تاسك مفتوحة ومفيش ولا واحدة In Progress. دوس هنا وحرّك واحدة.`

@@ -29,7 +29,9 @@ const NUDGE_KEYS = {
   workStart: 'nudgeWorkStart',
   workEnd: 'nudgeWorkEnd',
   workDays: 'nudgeWorkDays',
-  staleDays: 'nudgeStaleDays'
+  staleDays: 'nudgeStaleDays',
+  checkEnabled: 'nudgeCheckEnabled',
+  checkMinutes: 'nudgeCheckMinutes'
 };
 
 function readNudges(settings) {

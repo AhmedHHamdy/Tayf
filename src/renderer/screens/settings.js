@@ -11,6 +11,7 @@ const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
 const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
 const EVERY_CHOICES = [5, 10, 15, 20, 30, 45, 60];
 const IDLE_CHOICES = [3, 5, 10, 15, 20, 30];
+const CHECK_CHOICES = [30, 45, 60, 90, 120, 180, 240];
 const STALE_CHOICES = [1, 2, 3, 5, 7];
 
 let saving = false;
@@ -65,6 +66,8 @@ function paintPreferences(preferences) {
   fillNumbers(elements.snudgeidle, IDLE_CHOICES, nudges.idleMinutes, 'دقيقة');
   elements.snudgestart.value = nudges.workStart || '';
   elements.snudgeend.value = nudges.workEnd || '';
+  elements.snudgecheck.checked = !!nudges.checkEnabled;
+  fillNumbers(elements.snudgecheckevery, CHECK_CHOICES, nudges.checkMinutes, 'دقيقة');
   fillNumbers(elements.snudgestale, STALE_CHOICES, nudges.staleDays, 'يوم');
   paintDays(nudges.workDays || []);
 }
@@ -190,6 +193,12 @@ elements.snudgeidle.addEventListener('change', () =>
 );
 elements.snudgestale.addEventListener('change', () =>
   saveNudge({ staleDays: Number(elements.snudgestale.value) })
+);
+elements.snudgecheck.addEventListener('change', () =>
+  saveNudge({ checkEnabled: elements.snudgecheck.checked })
+);
+elements.snudgecheckevery.addEventListener('change', () =>
+  saveNudge({ checkMinutes: Number(elements.snudgecheckevery.value) })
 );
 elements.snudgestart.addEventListener('change', () => {
   if (elements.snudgestart.value) saveNudge({ workStart: elements.snudgestart.value });

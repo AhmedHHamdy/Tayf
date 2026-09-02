@@ -13,6 +13,8 @@ const DEFAULTS = {
   nudgeWorkEnd: '18:00',
   nudgeWorkDays: [0, 1, 2, 3, 4],
   nudgeStaleDays: 1,
+  nudgeCheckEnabled: true,
+  nudgeCheckMinutes: 90,
   nudgeSnoozeUntil: null,
   lastBoardId: null,
   lastProjectKey: null,

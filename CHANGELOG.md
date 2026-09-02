@@ -7,19 +7,32 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
 ### Added
 
-- **Nudges.** Tayf now tells you when the board has drifted from the work: nothing is In
-  Progress while you are clearly at the machine, or something has been In Progress past
-  its welcome. Clicking a nudge opens the list so the fix is one keystroke away. The
-  behaviour is the one written down in [docs/nudges.md](docs/nudges.md), and the policy
-  itself is a pure function in `src/app/nudges.js` with 14 tests covering every case
-  where it must stay quiet.
+- **Nudges.** Tayf now tells you when the board has drifted from the work. Three of them:
+  nothing is In Progress while you are clearly at the machine; a task has been In Progress
+  long enough that it is worth asking whether you are still on it; or one has been sitting
+  there since yesterday. Clicking a nudge opens the list so the fix is one keystroke away.
+  The behaviour is the one written down in [docs/nudges.md](docs/nudges.md), and the policy
+  itself is a pure function in `src/app/nudges.js` with 19 tests covering every case where
+  it must stay quiet.
 - A **النكزات** section in settings for all of it: on/off, how often, how long without a
-  keystroke counts as away, working hours, working days, and when a task counts as stale.
+  keystroke counts as away, working hours, working days, how often to ask whether you are
+  still on a task (and whether to ask at all), and when a task counts as stale.
 - **Snooze**, in the tray: an hour, until tomorrow morning, or back on. Without it the
   system would be hostile, and a hostile reminder gets switched off for good.
 - `categoryChangedAt` on work items, from Jira's `statuscategorychangedate`. It rides
   along on the list request that already runs, and it is what makes "in progress since"
   mean something — `updated` moves whenever anyone touches the issue.
+
+### Fixed
+
+- **A rejected create now says what Jira wanted.** Jira answers a bad create with `400`
+  and a list of the fields it is missing, but every `400` was collapsed into "Jira رجّع
+  رد مش متوقع" and the list was dropped on the floor — so a task that would not save gave
+  no way to find out why. The reason is now read out of `errorMessages` and `errors` and
+  shown with the failure: *Jira رفض الطلب: Field Bug Source is required · Field Bugs Type
+  is required · Field Description is required*. Transitions and edits get the same
+  treatment, since they fail the same way. The captured response body also grew from 160
+  to 600 characters, because a three-field rejection did not fit in 160.
 
 ## [0.5.0] - 2026-09-02
 
