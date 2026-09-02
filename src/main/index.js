@@ -29,7 +29,8 @@ const NUDGE_KEYS = {
   workStart: 'nudgeWorkStart',
   workEnd: 'nudgeWorkEnd',
   workDays: 'nudgeWorkDays',
-  staleDays: 'nudgeStaleDays',
+  overdueEnabled: 'nudgeOverdueEnabled',
+  overdueDays: 'nudgeOverdueDays',
   checkEnabled: 'nudgeCheckEnabled',
   checkMinutes: 'nudgeCheckMinutes'
 };

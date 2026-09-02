@@ -11,18 +11,18 @@ const MORNING_FALLBACK = 8 * 60;
 
 const TEXT_FOR = {
   'nothing-in-progress': (decision) => NUDGE_TEXT.nothingInProgress(decision.count),
-  stale: (decision) => NUDGE_TEXT.stale(decision.key, decision.days),
+  overdue: (decision) => NUDGE_TEXT.overdue(decision.key, decision.days),
   'still-on-it': (decision) => NUDGE_TEXT.stillOnIt(decision.key, decision.minutes)
 };
 
 const REMEMBER_AS = {
   'nothing-in-progress': 'idleAt',
-  stale: 'staleAt',
+  overdue: 'overdueAt',
   'still-on-it': 'checkAt'
 };
 
 function createNudges({ workspace, settings, log, onOpen }) {
-  const history = { idleAt: 0, staleAt: 0, checkAt: 0 };
+  const history = { idleAt: 0, overdueAt: 0, checkAt: 0 };
   let timer = null;
 
   function preferences() {
@@ -33,7 +33,8 @@ function createNudges({ workspace, settings, log, onOpen }) {
       workStart: settings.get('nudgeWorkStart'),
       workEnd: settings.get('nudgeWorkEnd'),
       workDays: settings.get('nudgeWorkDays'),
-      staleDays: settings.get('nudgeStaleDays'),
+      overdueEnabled: settings.get('nudgeOverdueEnabled'),
+      overdueDays: settings.get('nudgeOverdueDays'),
       checkEnabled: settings.get('nudgeCheckEnabled'),
       checkMinutes: settings.get('nudgeCheckMinutes'),
       snoozeUntil: settings.get('nudgeSnoozeUntil')

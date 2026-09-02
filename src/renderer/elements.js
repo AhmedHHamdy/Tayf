@@ -5,7 +5,7 @@ const IDS = [
   'ssite', 'semail', 'stoken', 'snote',
   'shotkey', 'saddkey', 'sauto', 'sautotext',
   'snudge', 'snudgeevery', 'snudgeidle', 'snudgestart', 'snudgeend', 'snudgedays',
-  'snudgecheck', 'snudgecheckevery', 'snudgestale',
+  'snudgecheck', 'snudgecheckevery', 'snudgeoverdue', 'snudgeoverduedays',
   'view', 'vtitle', 'vmeta', 'vdesc',
   'create', 'lblboard', 'cboardwrap', 'cboard', 'cboardlist',
   'lbltype', 'ctype', 'lblassignee', 'cassigneewrap', 'cassignee', 'cassigneelist',

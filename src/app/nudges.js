@@ -33,8 +33,23 @@ function inProgressSince(item) {
   return Date.parse(item.categoryChangedAt || item.updated || '') || null;
 }
 
-function longestRunning(working, at, minimumMs) {
-  return working
+function overdueBy(item, at, graceDays) {
+  const due = Date.parse(item.due || '');
+  if (!due) return 0;
+
+  const past = at - due;
+  return past >= (1 + graceDays) * DAY_MS ? Math.floor(past / DAY_MS) : 0;
+}
+
+function mostOverdue(items, at, graceDays) {
+  return items
+    .map((item) => ({ item, days: overdueBy(item, at, graceDays) }))
+    .filter((entry) => entry.days > 0)
+    .sort((first, second) => second.days - first.days)[0];
+}
+
+function longestRunning(items, at, minimumMs) {
+  return items
     .map((item) => ({ item, since: inProgressSince(item) }))
     .filter((entry) => entry.since && at - entry.since >= minimumMs)
     .sort((first, second) => first.since - second.since)[0];
@@ -51,6 +66,17 @@ function decide({ items, idleSeconds, now, settings, history }) {
   const open = (items || []).filter((item) => item.category !== DONE);
   if (!open.length) return null;
 
+  const late = settings.overdueEnabled ? mostOverdue(open, at, settings.overdueDays) : null;
+
+  if (late && at - (history.overdueAt || 0) >= DAY_MS) {
+    return {
+      kind: 'overdue',
+      key: late.item.key,
+      title: late.item.title,
+      days: late.days
+    };
+  }
+
   const working = open.filter((item) => item.category === IN_PROGRESS);
 
   if (!working.length) {
@@ -58,22 +84,15 @@ function decide({ items, idleSeconds, now, settings, history }) {
     return { kind: 'nothing-in-progress', count: open.length };
   }
 
-  const stale = longestRunning(working, at, settings.staleDays * DAY_MS);
-  if (stale && at - (history.staleAt || 0) >= DAY_MS) {
-    return {
-      kind: 'stale',
-      key: stale.item.key,
-      title: stale.item.title,
-      days: Math.floor((at - stale.since) / DAY_MS)
-    };
-  }
-
   if (!settings.checkEnabled) return null;
 
   const gap = settings.checkMinutes * MINUTE_MS;
   if (at - (history.checkAt || 0) < gap) return null;
 
-  const running = longestRunning(working, at, gap);
+  const onTime = settings.overdueEnabled
+    ? working.filter((item) => !overdueBy(item, at, settings.overdueDays))
+    : working;
+  const running = longestRunning(onTime, at, gap);
   if (!running) return null;
 
   return {
@@ -84,4 +103,4 @@ function decide({ items, idleSeconds, now, settings, history }) {
   };
 }
 
-module.exports = { decide, withinWorkingHours, minutesOfDay, DAY_MS };
+module.exports = { decide, withinWorkingHours, minutesOfDay, overdueBy, DAY_MS };

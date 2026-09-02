@@ -44,10 +44,23 @@ const TRAY_TEXT = {
   updateReady: (version) => `تحديث ${version} جاهز — سطّبه دلوقتي`
 };
 
+function count(amount, one, two, few, many) {
+  if (amount === 1) return one;
+  if (amount === 2) return two;
+  return `${amount} ${amount <= 10 ? few : many}`;
+}
+
+function spellDays(days) {
+  return count(days, 'يوم', 'يومين', 'أيام', 'يوم');
+}
+
 function spell(minutes) {
-  if (minutes < 60) return `${minutes} دقيقة`;
+  if (minutes < 60) return count(minutes, 'دقيقة', 'دقيقتين', 'دقايق', 'دقيقة');
+
   const hours = Math.floor(minutes / 60);
-  return hours === 1 ? 'ساعة' : hours === 2 ? 'ساعتين' : `${hours} ساعات`;
+  if (hours < 24) return count(hours, 'ساعة', 'ساعتين', 'ساعات', 'ساعة');
+
+  return spellDays(Math.floor(hours / 24));
 }
 
 const NUDGE_TEXT = {
@@ -59,9 +72,9 @@ const NUDGE_TEXT = {
     title: 'طيف — مفيش تاسك شغال عليها',
     body: `عندك ${count} تاسك مفتوحة ومفيش ولا واحدة In Progress. دوس هنا وحرّك واحدة.`
   }),
-  stale: (key, days) => ({
-    title: `طيف — ${key} قاعدة من ${days} يوم`,
-    body: 'لسه In Progress. لو خلصت اقفلها، ولو مش شغال عليها رجّعها.'
+  overdue: (key, days) => ({
+    title: `طيف — ${key} عدّى معادها`,
+    body: `كان المفروض تتقفل من ${spellDays(days)}. لو خلصت اقفلها، ولو محتاجة وقت غيّر التاريخ.`
   })
 };
 

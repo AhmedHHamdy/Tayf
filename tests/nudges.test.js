@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { decide, minutesOfDay, withinWorkingHours, DAY_MS } = require('../src/app/nudges');
+const { NUDGE_TEXT } = require('../src/strings');
 
 const NOW = new Date(2026, 8, 2, 10, 0, 0);
 const TODAY = NOW.getDay();
@@ -16,20 +17,26 @@ const SETTINGS = {
   workStart: '08:00',
   workEnd: '18:00',
   workDays: [TODAY],
-  staleDays: 1,
+  overdueEnabled: true,
+  overdueDays: 1,
   checkEnabled: true,
   checkMinutes: 90,
   snoozeUntil: null
 };
 
-const QUIET = { idleAt: 0, staleAt: 0, checkAt: 0 };
+const QUIET = { idleAt: 0, overdueAt: 0, checkAt: 0 };
 const MINUTE = 60_000;
+
+function daysAgo(days) {
+  return new Date(NOW.getTime() - days * DAY_MS).toISOString();
+}
 
 function item(overrides) {
   return {
     key: 'TAYF-1',
     title: 'شغل',
     category: 'new',
+    due: null,
     updated: new Date(NOW.getTime() - 60_000).toISOString(),
     categoryChangedAt: null,
     ...overrides
@@ -92,10 +99,10 @@ test('a task moved to done optimistically does not count as something to move', 
 });
 
 test('waits out the interval between nudges', () => {
-  const recent = { idleAt: NOW.getTime() - 14 * 60_000, staleAt: 0 };
+  const recent = { idleAt: NOW.getTime() - 14 * 60_000, overdueAt: 0 };
   assert.equal(ask({ history: recent }), null);
 
-  const older = { idleAt: NOW.getTime() - 15 * 60_000, staleAt: 0 };
+  const older = { idleAt: NOW.getTime() - 15 * 60_000, overdueAt: 0 };
   assert.equal(ask({ history: older }).kind, 'nothing-in-progress');
 });
 
@@ -139,51 +146,110 @@ test('asking can be switched off on its own', () => {
   assert.equal(ask({ items: [working], settings: { ...SETTINGS, checkEnabled: false } }), null);
 });
 
-test('a stale task earns the stale nudge first, and is still asked about later', () => {
+test('a late task belongs to the overdue nudge alone, and is never also asked about', () => {
   const working = item({
     category: 'indeterminate',
-    categoryChangedAt: new Date(NOW.getTime() - 2 * DAY_MS).toISOString()
+    due: daysAgo(2),
+    categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
   });
 
-  assert.equal(ask({ items: [working] }).kind, 'stale');
+  assert.equal(ask({ items: [working] }).kind, 'overdue');
 
-  const nudgedThisMorning = { ...QUIET, staleAt: NOW.getTime() - 60 * MINUTE };
-  assert.equal(ask({ items: [working], history: nudgedThisMorning }).kind, 'still-on-it');
+  const nudgedThisMorning = { ...QUIET, overdueAt: NOW.getTime() - 60 * MINUTE };
+  assert.equal(ask({ items: [working], history: nudgedThisMorning }), null);
 });
 
-test('nudges about a task that has sat in progress past the limit', () => {
-  const stale = item({
-    key: 'TAYF-9',
-    category: 'indeterminate',
-    categoryChangedAt: new Date(NOW.getTime() - 2 * DAY_MS).toISOString()
-  });
+test('each nudge takes its own tasks when both kinds are open at once', () => {
+  const items = [
+    item({
+      key: 'LATE',
+      category: 'indeterminate',
+      due: daysAgo(3),
+      categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
+    }),
+    item({
+      key: 'TODAY',
+      category: 'indeterminate',
+      categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
+    })
+  ];
 
-  const decision = ask({ items: [stale] });
-  assert.equal(decision.kind, 'stale');
+  assert.equal(ask({ items }).key, 'LATE');
+
+  const lateSaidAlready = { ...QUIET, overdueAt: NOW.getTime() - 60 * MINUTE };
+  const decision = ask({ items, history: lateSaidAlready });
+  assert.equal(decision.kind, 'still-on-it');
+  assert.equal(decision.key, 'TODAY');
+});
+
+test('nudges about a task whose date has passed', () => {
+  const late = item({ key: 'TAYF-9', due: daysAgo(2) });
+
+  const decision = ask({ items: [late] });
+  assert.equal(decision.kind, 'overdue');
   assert.equal(decision.key, 'TAYF-9');
   assert.equal(decision.days, 2);
 });
 
-test('nudges about the stalest task, and only once a day', () => {
-  const items = [
-    item({ key: 'A', category: 'indeterminate', categoryChangedAt: new Date(NOW.getTime() - 2 * DAY_MS).toISOString() }),
-    item({ key: 'B', category: 'indeterminate', categoryChangedAt: new Date(NOW.getTime() - 5 * DAY_MS).toISOString() })
-  ];
+test('says nothing about a task whose date has not run out yet', () => {
+  assert.equal(ask({ items: [item({ due: daysAgo(0) })] }).kind, 'nothing-in-progress');
+  assert.equal(ask({ items: [item({ due: daysAgo(1) })] }).kind, 'nothing-in-progress');
+});
+
+test('how long a task may run late is a setting', () => {
+  const late = item({ due: daysAgo(2) });
+
+  assert.equal(ask({ items: [late], settings: { ...SETTINGS, overdueDays: 3 } }).kind, 'nothing-in-progress');
+  assert.equal(ask({ items: [late], settings: { ...SETTINGS, overdueDays: 0 } }).kind, 'overdue');
+});
+
+test('a task with no date is never late', () => {
+  assert.equal(ask({ items: [item({ due: null })] }).kind, 'nothing-in-progress');
+});
+
+test('reads the plain date Jira sends', () => {
+  const late = item({ key: 'TAYF-7', due: '2026-08-23' });
+  assert.equal(ask({ items: [late] }).key, 'TAYF-7');
+});
+
+test('nudges about the latest task, and only once a day', () => {
+  const items = [item({ key: 'A', due: daysAgo(2) }), item({ key: 'B', due: daysAgo(5) })];
 
   assert.equal(ask({ items }).key, 'B');
 
-  const nudgedThisMorning = { ...QUIET, staleAt: NOW.getTime() - 60 * MINUTE };
-  assert.notEqual(ask({ items, history: nudgedThisMorning }).kind, 'stale');
+  const nudgedThisMorning = { ...QUIET, overdueAt: NOW.getTime() - 60 * MINUTE };
+  assert.equal(ask({ items, history: nudgedThisMorning }).kind, 'nothing-in-progress');
+});
+
+test('switching the overdue nudge off hands its tasks back to the check-in', () => {
+  const late = item({
+    key: 'TAYF-8',
+    category: 'indeterminate',
+    due: daysAgo(3),
+    categoryChangedAt: new Date(NOW.getTime() - 100 * MINUTE).toISOString()
+  });
+
+  assert.equal(ask({ items: [late] }).kind, 'overdue');
+
+  const settings = { ...SETTINGS, overdueEnabled: false };
+  assert.equal(ask({ items: [late], settings }).kind, 'still-on-it');
+});
+
+test('the overdue nudge can be switched off on its own', () => {
+  const late = item({ key: 'TAYF-9', due: daysAgo(2) });
+
+  const settings = { ...SETTINGS, overdueEnabled: false };
+  assert.equal(ask({ items: [late], settings }).kind, 'nothing-in-progress');
 });
 
 test('falls back to the update time when Jira gives no category change date', () => {
-  const stale = item({
+  const running = item({
     category: 'indeterminate',
     categoryChangedAt: null,
     updated: new Date(NOW.getTime() - 3 * DAY_MS).toISOString()
   });
 
-  assert.equal(ask({ items: [stale] }).kind, 'stale');
+  assert.equal(ask({ items: [running] }).kind, 'still-on-it');
 });
 
 test('reads a clock, and rejects nonsense', () => {
@@ -192,4 +258,19 @@ test('reads a clock, and rejects nonsense', () => {
   assert.equal(minutesOfDay('24:00'), null);
   assert.equal(minutesOfDay('08:70'), null);
   assert.equal(minutesOfDay(''), null);
+});
+
+test('counts in Arabic, not in a running total of hours', () => {
+  assert.match(NUDGE_TEXT.overdue('T-1', 1).body, /من يوم\./);
+  assert.match(NUDGE_TEXT.overdue('T-1', 2).body, /من يومين\./);
+  assert.match(NUDGE_TEXT.overdue('T-1', 7).body, /من 7 أيام\./);
+  assert.match(NUDGE_TEXT.overdue('T-1', 30).body, /من 30 يوم\./);
+});
+
+test('a long-running task is told in days, not in dozens of hours', () => {
+  assert.match(NUDGE_TEXT.stillOnIt('T-1', 45).body, /بقالها 45 دقيقة /);
+  assert.match(NUDGE_TEXT.stillOnIt('T-1', 90).body, /بقالها ساعة /);
+  assert.match(NUDGE_TEXT.stillOnIt('T-1', 5 * 60).body, /بقالها 5 ساعات /);
+  assert.match(NUDGE_TEXT.stillOnIt('T-1', 30 * 60).body, /بقالها يوم /);
+  assert.match(NUDGE_TEXT.stillOnIt('T-1', 80 * 60).body, /بقالها 3 أيام /);
 });

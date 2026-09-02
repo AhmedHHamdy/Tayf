@@ -12,7 +12,7 @@ const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
 const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
 const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
 const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
-const STALE_CHOICES = [1, 2, 3, 5, 7];
+const OVERDUE_CHOICES = [1, 2, 3, 5, 7];
 
 let saving = false;
 let activeTab = 'conn';
@@ -68,7 +68,8 @@ function paintPreferences(preferences) {
   elements.snudgeend.value = nudges.workEnd || '';
   elements.snudgecheck.checked = !!nudges.checkEnabled;
   fillNumbers(elements.snudgecheckevery, CHECK_CHOICES, nudges.checkMinutes, 'دقيقة');
-  fillNumbers(elements.snudgestale, STALE_CHOICES, nudges.staleDays, 'يوم');
+  elements.snudgeoverdue.checked = !!nudges.overdueEnabled;
+  fillNumbers(elements.snudgeoverduedays, OVERDUE_CHOICES, nudges.overdueDays, 'يوم');
   paintDays(nudges.workDays || []);
 }
 
@@ -191,8 +192,11 @@ elements.snudgeevery.addEventListener('change', () =>
 elements.snudgeidle.addEventListener('change', () =>
   saveNudge({ idleMinutes: Number(elements.snudgeidle.value) })
 );
-elements.snudgestale.addEventListener('change', () =>
-  saveNudge({ staleDays: Number(elements.snudgestale.value) })
+elements.snudgeoverdue.addEventListener('change', () =>
+  saveNudge({ overdueEnabled: elements.snudgeoverdue.checked })
+);
+elements.snudgeoverduedays.addEventListener('change', () =>
+  saveNudge({ overdueDays: Number(elements.snudgeoverduedays.value) })
 );
 elements.snudgecheck.addEventListener('change', () =>
   saveNudge({ checkEnabled: elements.snudgecheck.checked })

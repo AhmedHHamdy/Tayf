@@ -9,14 +9,20 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
 - **Nudges.** Tayf now tells you when the board has drifted from the work. Three of them:
   nothing is In Progress while you are clearly at the machine; a task has been In Progress
-  long enough that it is worth asking whether you are still on it; or one has been sitting
-  there since yesterday. Clicking a nudge opens the list so the fix is one keystroke away.
-  The behaviour is the one written down in [docs/nudges.md](docs/nudges.md), and the policy
-  itself is a pure function in `src/app/nudges.js` with 19 tests covering every case where
-  it must stay quiet.
+  long enough that it is worth asking whether you are still on it; or a task's due date has
+  come and gone and it is still open. Clicking a nudge opens the list so the fix is one
+  keystroke away. The behaviour is the one written down in [docs/nudges.md](docs/nudges.md),
+  and the policy itself is a pure function in `src/app/nudges.js` with 24 tests covering
+  every case where it must stay quiet.
 - A **النكزات** section in settings for all of it: on/off, how often, how long without a
   keystroke counts as away, working hours, working days, how often to ask whether you are
-  still on a task (and whether to ask at all), and when a task counts as stale.
+  still on a task (and whether to ask at all), and how long a task may run past its date
+  before it earns a nudge (and whether to nudge about late tasks at all).
+- **`npm run try-nudge`**, so a nudge can be tested without waiting for the clock. It runs
+  the real policy against the real settings and the cached board, prints which gate is
+  closed and how every task looks to it, and with `--anyway` or `--all` shows the actual
+  toast. It is what tells a policy that is quiet on purpose apart from a notification
+  Windows swallowed.
 - **Snooze**, in the tray: an hour, until tomorrow morning, or back on. Without it the
   system would be hostile, and a hostile reminder gets switched off for good.
 - `categoryChangedAt` on work items, from Jira's `statuscategorychangedate`. It rides
