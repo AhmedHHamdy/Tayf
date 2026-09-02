@@ -9,9 +9,9 @@ const TABS = ['conn', 'nudge', 'gen'];
 const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen' };
 const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
 const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
-const EVERY_CHOICES = [5, 10, 15, 20, 30, 45, 60];
-const IDLE_CHOICES = [3, 5, 10, 15, 20, 30];
-const CHECK_CHOICES = [30, 45, 60, 90, 120, 180, 240];
+const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
+const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
+const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
 const STALE_CHOICES = [1, 2, 3, 5, 7];
 
 let saving = false;
