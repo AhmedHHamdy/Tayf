@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { app, Notification, powerMonitor } = require('electron');
 
+const platform = require('../src/main/platform');
 const { decide, withinWorkingHours, overdueBy, isWorking } = require('../src/app/nudges');
 const { NUDGE_KEYS } = require('../src/storage/settings');
 const { NUDGE_TEXT } = require('../src/strings');
@@ -130,14 +131,17 @@ function main() {
     ...Object.fromEntries(Object.entries(NUDGE_KEYS).map(([name, key]) => [name, stored[key]])),
     snoozeUntil: stored.nudgeSnoozeUntil
   };
-  const cache = readJson(path.join(folder, 'cache.json'), { issues: [] });
-  const items = cache.issues || [];
+  const cache = readJson(path.join(folder, 'cache.json'), { items: [] });
+  const items = cache.items || [];
   const now = new Date();
   const idleSeconds = powerMonitor.getSystemIdleTime();
 
   console.log('\n=== Tayf nudge test ===');
   console.log(`\nreading ${folder}`);
-  console.log(`board   : ${items.length} tasks, cached ${spellGap(Date.now() - new Date(cache.fetchedAt).getTime())} ago`);
+  const cachedAt = cache.fetchedAt
+    ? `${spellGap(Date.now() - new Date(cache.fetchedAt).getTime())} ago`
+    : 'never';
+  console.log(`board   : ${items.length} tasks, cached ${cachedAt}`);
 
   const { open, blocked } = reportGates(settings, items, idleSeconds, now);
   if (open.length) reportItems(open, settings, now);
@@ -161,7 +165,13 @@ function main() {
 
   if (!decision) {
     console.log('\nverdict : quiet');
-    if (blocked && !anyway) {
+    if (!open.length) {
+      console.log(
+        items.length
+          ? '          every cached task is closed — nothing to nudge about'
+          : '          the cached board is empty — open Tayf, let it refresh, then run this again'
+      );
+    } else if (blocked && !anyway) {
       console.log('          a gate above is closed — run with --anyway to ignore the clock and the idle check');
     } else {
       console.log('          every gate is open, but no task earns a nudge right now');
@@ -176,5 +186,5 @@ function main() {
 }
 
 app.setName('Tayf');
-app.setAppUserModelId('com.tayf.overlay');
+platform.prepare();
 app.whenReady().then(main);

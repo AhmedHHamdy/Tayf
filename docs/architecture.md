@@ -71,6 +71,13 @@ everything else is a single concern (`overlay-window`, `tray-menu`, `hotkeys`,
 defaults, focus restoration, window flags, tray icons. **Adding Linux support is
 one new file there plus a line in `platform/index.js`.**
 
+Windows takes the icon and the name above a notification from whichever Start Menu
+shortcut carries the app's AppUserModelID — not from the notification itself, which
+is why no title says "Tayf". The installed app's shortcut supplies both. A dev run
+cannot: Electron rewrites its own `Electron.lnk` with whatever id is set, on every
+toast. So `npm start` runs under a second id, `com.tayf.overlay.dev`, and leaves that
+shortcut to Electron — a dev toast says Electron, and the shipped app keeps its name.
+
 ### `src/renderer/`
 
 Plain ES modules, no framework, no build step. Electron loads them over `file://`

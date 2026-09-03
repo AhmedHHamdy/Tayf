@@ -8,6 +8,9 @@ const user32 = koffi.load('user32.dll');
 const GetForegroundWindow = user32.func('void* GetForegroundWindow()');
 const SetForegroundWindow = user32.func('bool SetForegroundWindow(void* hWnd)');
 
+const APP_ID = 'com.tayf.overlay';
+const DEV_APP_ID = 'com.tayf.overlay.dev';
+
 let overlayHandle = 0n;
 let previouslyFocusedWindow = null;
 
@@ -22,7 +25,7 @@ module.exports = {
   hotkeyLabel: (accelerator) => accelerator,
 
   prepare() {
-    app.setAppUserModelId('com.tayf.overlay');
+    app.setAppUserModelId(app.isPackaged ? APP_ID : DEV_APP_ID);
   },
 
   windowOptions: () => ({}),

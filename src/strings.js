@@ -18,8 +18,11 @@ const ERROR_TEXT = {
     'جيرا عايز وقت مسجّل على التاسك. اختار الحالة تاني وهيسألك عن الوقت المرة دي.'
 };
 
+const APP_NAME = 'طيف';
+
 const TRAY_TEXT = {
-  appName: 'طيف',
+  appName: APP_NAME,
+  appTitle: (version, dev) => `${APP_NAME} ${version}${dev ? ' (تطوير)' : ''}`,
   needsSetup: 'محتاج إعداد',
   connectionProblem: 'فيه مشكلة في الاتصال',
   itemCount: (count) => `${count} تاسك`,
@@ -55,32 +58,48 @@ function spellDays(days) {
   return count(days, 'يوم', 'يومين', 'أيام', 'يوم');
 }
 
+function spellHours(hours) {
+  return count(hours, 'ساعة', 'ساعتين', 'ساعات', 'ساعة');
+}
+
+function spellMinutes(minutes) {
+  return count(minutes, 'دقيقة', 'دقيقتين', 'دقايق', 'دقيقة');
+}
+
+const PAST_THE_HOUR = { 15: 'وربع', 20: 'وتلت', 30: 'ونص' };
+const SHORT_OF_THE_HOUR = { 40: 'إلا تلت', 45: 'إلا ربع' };
+
 function spell(minutes) {
-  if (minutes < 60) return count(minutes, 'دقيقة', 'دقيقتين', 'دقايق', 'دقيقة');
+  if (minutes < 60) return spellMinutes(minutes);
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return count(hours, 'ساعة', 'ساعتين', 'ساعات', 'ساعة');
+  if (hours >= 24) return spellDays(Math.floor(hours / 24));
 
-  return spellDays(Math.floor(hours / 24));
+  const rest = minutes % 60;
+  if (!rest) return spellHours(hours);
+  if (PAST_THE_HOUR[rest]) return `${spellHours(hours)} ${PAST_THE_HOUR[rest]}`;
+  if (SHORT_OF_THE_HOUR[rest]) return `${spellHours(hours + 1)} ${SHORT_OF_THE_HOUR[rest]}`;
+
+  return `${spellHours(hours)} و${spellMinutes(rest)}`;
 }
 
 const NUDGE_TEXT = {
   stillOnIt: (key, minutes) => ({
-    title: `طيف — ${key} لسه شغال عليها؟`,
+    title: `${key} لسه شغال عليها؟`,
     body: `بقالها ${spell(minutes)} In Progress. لو خلصت اقفلها، ولو لسه سيبها وكمّل.`
   }),
   nothingInProgress: (count) => ({
-    title: 'طيف — مفيش تاسك شغال عليها',
+    title: 'مفيش تاسك شغال عليها',
     body: `عندك ${count} تاسك مفتوحة ومفيش ولا واحدة In Progress. دوس هنا وحرّك واحدة.`
   }),
   overdue: (key, days) => ({
-    title: `طيف — ${key} عدّى معادها`,
+    title: `${key} عدّى معادها`,
     body: `كان المفروض تتقفل من ${spellDays(days)}. لو خلصت اقفلها، ولو محتاجة وقت غيّر التاريخ.`
   })
 };
 
 const NOTIFICATION_TEXT = {
-  actionFailedTitle: (key) => `طيف — ${key ? `${key} ماتنفذش` : 'الأكشن ماتنفذش'}`,
+  actionFailedTitle: (key) => (key ? `${key} ماتنفذش` : 'الأكشن ماتنفذش'),
   transitionFailed: (status, reason) => `مانتقلش لـ ${status} — ${reason}`,
   updateFailed: (reason) => `ماتعدّلتش — ${reason}`,
   createFailed: (reason) => `التاسك ماتعملتش — ${reason}`

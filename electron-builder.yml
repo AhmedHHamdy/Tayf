@@ -33,7 +33,7 @@ nsis:
   perMachine: false
   allowToChangeInstallationDirectory: false
   deleteAppDataOnUninstall: false
-  shortcutName: Tayf
+  shortcutName: طيف
   artifactName: Tayf-Setup-${version}.${ext}
 
 mac:
