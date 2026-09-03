@@ -1,12 +1,16 @@
 'use strict';
 
 const path = require('path');
-const { Tray, Menu, nativeTheme, shell } = require('electron');
+const { app, Tray, Menu, nativeTheme, shell } = require('electron');
 const platform = require('./platform');
 const autostart = require('./autostart');
 const { TRAY_TEXT } = require('../strings');
 
 const ASSETS = path.join(__dirname, '..', '..', 'assets');
+
+function appTitle() {
+  return TRAY_TEXT.appTitle(app.getVersion(), !app.isPackaged);
+}
 
 function headline(state) {
   if (!state.configured) return TRAY_TEXT.needsSetup;
@@ -57,7 +61,7 @@ function createTrayMenu({ workspace, hotkeys, actions, updates, nudges }) {
     const head = headline(state);
 
     return [
-      { label: `${TRAY_TEXT.appName} — ${head}`, enabled: false },
+      { label: `${appTitle()} — ${head}`, enabled: false },
       { type: 'separator' },
       { label: withHotkey(TRAY_TEXT.open, hotkeys.toggle), click: actions.openList },
       { label: withHotkey(TRAY_TEXT.newItem, hotkeys.compose), click: actions.openCompose },
@@ -98,7 +102,7 @@ function createTrayMenu({ workspace, hotkeys, actions, updates, nudges }) {
   function update() {
     if (!tray || tray.isDestroyed()) return;
     const suffix = hotkeys.toggle ? ` · ${platform.hotkeyLabel(hotkeys.toggle)}` : '';
-    tray.setToolTip(`${TRAY_TEXT.appName} — ${headline(workspace.state)}${suffix}`);
+    tray.setToolTip(`${appTitle()} — ${headline(workspace.state)}${suffix}`);
     tray.setContextMenu(Menu.buildFromTemplate(template()));
   }
 

@@ -3,6 +3,37 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Added
+
+- **The tray says which build you are looking at.** The first line is now طيف 0.6.1, and
+  طيف 0.6.1 (تطوير) when it is `npm start` rather than the installed app — same line in the
+  tooltip, so it is one hover. Two builds that look identical in a notification are not
+  identical in the tray any more.
+
+### Fixed
+
+- **A task past the hour is told which quarter it is at.** "Are you still on this?" rounded
+  the time down to whole hours, so a ticket that had been running an hour and a quarter, an
+  hour and a half, and an hour and three quarters all read بقالها ساعة — three nudges in a
+  row that each looked like the last one repeating rather than time passing. It now says
+  ساعة وربع, ساعة ونص, ساعتين إلا ربع, and ساعة و20 دقيقة for the minutes that do not land
+  on a quarter.
+- **A notification comes from طيف, not from Electron.** Windows takes the icon and the name
+  above a toast from whichever Start Menu shortcut carries the app's AppUserModelID — and a
+  development run was carrying the shipped app's one. Electron rewrites its own
+  `Electron.lnk` with that id on every toast, so notifications raised by the installed app
+  were being attributed to Electron. `npm start` now runs under its own id and leaves the
+  real one to the installed shortcut. The titles no longer start with "طيف —" either: the
+  app's name belongs in the header, not in the text.
+
+### Changed
+
+- The Start Menu and desktop shortcut is named **طيف** rather than Tayf, because that name
+  is exactly what Windows prints above every notification. Searching the Start Menu for
+  `tayf` will not find it after the next install — search for طيف.
+
 ## [0.6.1] - 2026-09-02
 
 ### Fixed

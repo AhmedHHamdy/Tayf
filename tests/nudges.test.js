@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { decide, minutesOfDay, withinWorkingHours, DAY_MS } = require('../src/app/nudges');
-const { NUDGE_TEXT } = require('../src/strings');
+const { NUDGE_TEXT, NOTIFICATION_TEXT } = require('../src/strings');
 
 const NOW = new Date(2026, 8, 2, 10, 0, 0);
 const TODAY = NOW.getDay();
@@ -329,8 +329,29 @@ test('counts in Arabic, not in a running total of hours', () => {
 
 test('a long-running task is told in days, not in dozens of hours', () => {
   assert.match(NUDGE_TEXT.stillOnIt('T-1', 45).body, /بقالها 45 دقيقة /);
-  assert.match(NUDGE_TEXT.stillOnIt('T-1', 90).body, /بقالها ساعة /);
   assert.match(NUDGE_TEXT.stillOnIt('T-1', 5 * 60).body, /بقالها 5 ساعات /);
   assert.match(NUDGE_TEXT.stillOnIt('T-1', 30 * 60).body, /بقالها يوم /);
   assert.match(NUDGE_TEXT.stillOnIt('T-1', 80 * 60).body, /بقالها 3 أيام /);
+});
+
+test('the quarter past the hour is said, not swallowed', () => {
+  const spelt = (minutes) => NUDGE_TEXT.stillOnIt('T-1', minutes).body.split(' In Progress')[0];
+
+  assert.equal(spelt(60), 'بقالها ساعة');
+  assert.equal(spelt(75), 'بقالها ساعة وربع');
+  assert.equal(spelt(80), 'بقالها ساعة وتلت');
+  assert.equal(spelt(90), 'بقالها ساعة ونص');
+  assert.equal(spelt(105), 'بقالها ساعتين إلا ربع');
+  assert.equal(spelt(120), 'بقالها ساعتين');
+  assert.equal(spelt(130), 'بقالها ساعتين و10 دقايق');
+  assert.equal(spelt(3 * 60 + 30), 'بقالها 3 ساعات ونص');
+  assert.equal(spelt(61), 'بقالها ساعة ودقيقة');
+});
+
+test('the title carries the task, not the app name', () => {
+  assert.equal(NUDGE_TEXT.stillOnIt('T-1', 60).title, 'T-1 لسه شغال عليها؟');
+  assert.equal(NUDGE_TEXT.overdue('T-1', 2).title, 'T-1 عدّى معادها');
+  assert.equal(NUDGE_TEXT.nothingInProgress(3).title, 'مفيش تاسك شغال عليها');
+  assert.equal(NOTIFICATION_TEXT.actionFailedTitle('T-1'), 'T-1 ماتنفذش');
+  assert.equal(NOTIFICATION_TEXT.actionFailedTitle(null), 'الأكشن ماتنفذش');
 });
