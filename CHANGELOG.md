@@ -3,6 +3,24 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Added
+
+- **Linux.** `src/main/platform/linux.js` fills in the third adapter, `platform/index.js`
+  now names all three explicitly, autostart writes an XDG `.desktop` file into
+  `~/.config/autostart`, and `npm run dist:linux` builds an AppImage. Contributed by
+  [@AhmedHHamdy](https://github.com/AhmedHHamdy) in
+  [#7](https://github.com/Fathi-Mohammed/Tayf/pull/7), tested on Ubuntu 24.04.
+
+  Two things to know before you rely on it. The adapter does not restore focus itself —
+  it trusts the window manager to hand focus back once the overlay hides, which is how
+  X11 behaves. And a global shortcut is registered by Chromium, which cannot claim one
+  under Wayland unless the compositor offers the portal for it; if the hotkey does not
+  answer on your session, that is where to look first. The tray needs an AppIndicator
+  host — Ubuntu ships one, a plain GNOME does not, and without it there is no icon and
+  no way into the settings but the hotkey.
+
 ## [0.6.2] - 2026-09-03
 
 ### Added
