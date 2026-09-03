@@ -64,9 +64,10 @@ same surface as `JiraProvider`, and construct it in `src/main/index.js → conne
 Nothing above the provider layer should need to change. See
 [ADR-0002](docs/adr/0002-provider-abstraction.md).
 
-**Linux support:** add `src/main/platform/linux.js` implementing the same shape as
-`windows.js` / `macos.js`, and select it in `platform/index.js`. The interesting part
-is focus restoration — read the Windows section of the quirks doc first.
+**Linux platform changes:** keep `src/main/platform/linux.js` aligned with the shape
+of `windows.js` / `macos.js`, and test window focus and global shortcuts on both X11
+and Wayland when possible. Linux compositors restore focus after the overlay is
+hidden, so the adapter does not force another application's window to the front.
 
 **A settings section:** add a `.snavitem` to `#snav` and a `.spane` of `.srow`s in
 `index.html`, its ids to `elements.js`, and its name to `TABS` and `PANES` in

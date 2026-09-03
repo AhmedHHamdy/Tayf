@@ -37,6 +37,7 @@ const TRAY_TEXT = {
   quit: 'خروج',
   startWithWindows: 'يشتغل مع ويندوز',
   startWithMac: 'يشتغل مع الماك',
+  startWithLinux: 'يشتغل مع لينكس',
   nudges: 'النكزات',
   nudgeSnoozeHour: 'سكّت ساعة',
   nudgeSnoozeTomorrow: 'سكّت لحد بكرة',

@@ -68,8 +68,8 @@ everything else is a single concern (`overlay-window`, `tray-menu`, `hotkeys`,
 `autostart`, `relaunch`, `ipc`).
 
 `platform/` holds everything that differs between operating systems — hotkey
-defaults, focus restoration, window flags, tray icons. **Adding Linux support is
-one new file there plus a line in `platform/index.js`.**
+defaults, focus restoration, window flags, tray icons. `platform/index.js` selects
+the Windows, macOS, or Linux adapter explicitly.
 
 Windows takes the icon and the name above a notification from whichever Start Menu
 shortcut carries the app's AppUserModelID — not from the notification itself, which

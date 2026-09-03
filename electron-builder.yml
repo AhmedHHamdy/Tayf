@@ -50,3 +50,13 @@ mac:
   identity: null
   extendInfo:
     LSUIElement: true
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  artifactName: Tayf-${arch}.${ext}
+  category: Utility
+  executableName: tayf
+  icon: build/icon.png
