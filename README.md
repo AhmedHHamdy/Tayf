@@ -53,6 +53,13 @@ cp config.example.json config.json   # املا الموقع والإيميل و
 npm start
 ```
 
+على Ubuntu 24.04، سطّب مكتبات Electron المطلوبة الأول:
+
+```bash
+sudo apt update
+sudo apt install libnspr4 libnss3 libasound2t64
+```
+
 التوكن بتعمله من
 [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
 وممكن كمان تحطه من جوه الأداة نفسها: أيقونة الساعة ← الإعدادات.
@@ -60,14 +67,15 @@ npm start
 **بياناتك على جهازك بس.** مفيش سيرفر، ومفيش تتبّع. التوكن بيتحفظ في مجلد بيانات
 التطبيق وعمره ما بيخرج من جهازك غير لجيرا نفسه.
 
-عايز نسخة مستقلة؟ `npm run dist`.
+عايز نسخة مستقلة؟ `npm run dist`. على لينكس استخدم
+`npm run dist:linux` عشان تعمل AppImage.
 
 ## المشروع مبني إزاي
 
 | | |
 |---|---|
 | الستاك | Electron · جافاسكريبت عادية · من غير خطوة بناء |
-| المنصات | ويندوز · ماك (لينكس محتاج ملف واحد — شوف المساهمة) |
+| المنصات | ويندوز · ماك · لينكس |
 | جيرا | Jira Cloud · دخول بـ API Token |
 | الاختبارات | `node --test` من غير أي مكتبات |
 
@@ -83,7 +91,7 @@ npm start
 
 أهلاً بأي مساهمة. ابدأ من [CONTRIBUTING.ar.md](CONTRIBUTING.ar.md).
 
-أكتر حاجات مفيدة دلوقتي: دعم لينكس · إخراج نصوص الواجهة للترجمة ·
+أكتر حاجات مفيدة دلوقتي: إخراج نصوص الواجهة للترجمة ·
 حفظ التوكن في مدير أسرار النظام · backoff للـ rate limit.
 
 ## الرخصة

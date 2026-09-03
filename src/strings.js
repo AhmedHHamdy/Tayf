@@ -33,6 +33,7 @@ const TRAY_TEXT = {
   quit: 'خروج',
   startWithWindows: 'يشتغل مع ويندوز',
   startWithMac: 'يشتغل مع الماك',
+  startWithLinux: 'يشتغل مع لينكس',
   checkUpdates: 'شوف لو فيه تحديث',
   checkingUpdates: 'بيدوّر على تحديث…',
   downloadingUpdate: 'بينزّل التحديث…',

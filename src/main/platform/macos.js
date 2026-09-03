@@ -14,6 +14,7 @@ const SYMBOLS = [
 module.exports = {
   isMac: true,
   isWindows: false,
+  isLinux: false,
 
   toggleHotkeys: ['Alt+Space', 'Command+Shift+Space', 'Control+Alt+Space', 'Control+Shift+J'],
   composeHotkeys: ['Alt+Shift+Space', 'Command+Control+Space', 'Control+Alt+N'],

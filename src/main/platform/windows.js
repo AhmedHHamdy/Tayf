@@ -14,6 +14,7 @@ let previouslyFocusedWindow = null;
 module.exports = {
   isMac: false,
   isWindows: true,
+  isLinux: false,
 
   toggleHotkeys: ['Control+Space', 'Alt+Space', 'Control+Alt+Space', 'Control+Shift+J'],
   composeHotkeys: ['Control+Shift+Space', 'Alt+Shift+Space', 'Control+Alt+N'],

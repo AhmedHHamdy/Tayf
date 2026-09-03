@@ -57,6 +57,13 @@ cp config.example.json config.json   # fill in site, email, API token
 npm start
 ```
 
+On Ubuntu 24.04, install Electron's runtime libraries first:
+
+```bash
+sudo apt update
+sudo apt install libnspr4 libnss3 libasound2t64
+```
+
 Create a token at
 [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
 You can also enter it from inside the app: tray icon → Settings.
@@ -64,14 +71,15 @@ You can also enter it from inside the app: tray icon → Settings.
 **Your data stays on your machine.** There is no server and no telemetry. The token
 is stored in the app's user-data directory and is never sent anywhere except Jira.
 
-For a standalone build: `npm run dist`.
+For a standalone build: `npm run dist`. On Linux, use `npm run dist:linux` to create
+an AppImage.
 
 ## How it is built
 
 | | |
 |---|---|
 | Stack | Electron · plain JavaScript · no build step |
-| Platforms | Windows · macOS (Linux needs one file — see contributing) |
+| Platforms | Windows · macOS · Linux |
 | Jira | Jira Cloud · API token auth |
 | Tests | `node --test`, no dependencies |
 
@@ -88,7 +96,7 @@ between Windows and macOS) lives in
 
 Contributions are welcome — start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Most useful right now: Linux support · extracting UI strings for translation ·
+Most useful right now: extracting UI strings for translation ·
 storing the token in the OS keychain · rate-limit backoff.
 
 ## License

@@ -1,3 +1,15 @@
 'use strict';
 
-module.exports = process.platform === 'darwin' ? require('./macos') : require('./windows');
+const adapters = {
+  darwin: './macos',
+  linux: './linux',
+  win32: './windows'
+};
+
+const adapter = adapters[process.platform];
+
+if (!adapter) {
+  throw new Error(`Unsupported platform: ${process.platform}`);
+}
+
+module.exports = require(adapter);
