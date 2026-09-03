@@ -3,14 +3,14 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
-## [Unreleased]
+## [0.6.2] - 2026-09-03
 
 ### Added
 
-- **The tray says which build you are looking at.** The first line is now طيف 0.6.1, and
-  طيف 0.6.1 (تطوير) when it is `npm start` rather than the installed app — same line in the
-  tooltip, so it is one hover. Two builds that look identical in a notification are not
-  identical in the tray any more.
+- **The tray says which build you are looking at.** Its first line carries the name and the
+  version — طيف 0.6.2 — and a (تطوير) marker when it is `npm start` rather than the installed
+  app. Same line in the tooltip, so it is one hover. Two builds that look identical in a
+  notification are not identical in the tray any more.
 
 ### Fixed
 
