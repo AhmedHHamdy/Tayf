@@ -18,8 +18,29 @@ function withHotkey(label, accelerator) {
   return accelerator ? `${label}  (${platform.hotkeyLabel(accelerator)})` : label;
 }
 
-function createTrayMenu({ workspace, hotkeys, actions, updates }) {
+function clockTime(timestamp) {
+  return new Date(timestamp).toLocaleTimeString('ar-EG', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function createTrayMenu({ workspace, hotkeys, actions, updates, nudges }) {
   let tray = null;
+
+  function nudgeItems() {
+    const until = nudges ? nudges.snoozedUntil() : null;
+    const asleep = !!until && until > Date.now();
+
+    return [
+      ...(asleep
+        ? [{ label: TRAY_TEXT.nudgeSnoozedUntil(clockTime(until)), enabled: false }]
+        : []),
+      { label: TRAY_TEXT.nudgeSnoozeHour, click: actions.snoozeNudgesHour },
+      { label: TRAY_TEXT.nudgeSnoozeTomorrow, click: actions.snoozeNudgesTomorrow },
+      { label: TRAY_TEXT.nudgeWake, click: actions.wakeNudges, enabled: asleep }
+    ];
+  }
 
   function updateItems() {
     if (!updates || !updates.supported) return [];
@@ -54,6 +75,7 @@ function createTrayMenu({ workspace, hotkeys, actions, updates }) {
           }
         }))
       },
+      { label: TRAY_TEXT.nudges, submenu: nudgeItems() },
       {
         label: TRAY_TEXT[platform.autoStartLabel],
         type: 'checkbox',

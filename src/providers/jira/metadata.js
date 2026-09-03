@@ -41,6 +41,26 @@ async function fetchIssueTypes(client, projectKey) {
     .map((type) => ({ id: type.id, name: type.name }));
 }
 
+async function fetchStatuses(client, projectKey) {
+  const types = await client.get(
+    `/rest/api/3/project/${encodeURIComponent(projectKey)}/statuses`
+  );
+
+  const byName = new Map();
+  (types || []).forEach((type) =>
+    (type.statuses || []).forEach((status) => {
+      const name = String(status.name || '').trim();
+      if (!name || byName.has(name)) return;
+      byName.set(name, {
+        name,
+        category: (status.statusCategory && status.statusCategory.key) || 'new'
+      });
+    })
+  );
+
+  return [...byName.values()];
+}
+
 async function fetchAssignableUsers(client, projectKey) {
   const users = await client.get(
     `/rest/api/3/user/assignable/search?project=${encodeURIComponent(projectKey)}&maxResults=100`
@@ -125,6 +145,7 @@ module.exports = {
   fetchProjects,
   fetchIssueTypes,
   fetchAssignableUsers,
+  fetchStatuses,
   fetchCreateFields,
   fetchFieldsByClauseName,
   PERMISSIVE_CREATE_FIELDS

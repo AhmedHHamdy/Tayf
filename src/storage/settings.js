@@ -6,10 +6,36 @@ const { readJson, writeJsonQuietly } = require('./json-file');
 const DEFAULTS = {
   hotkey: null,
   addHotkey: null,
+  nudgesEnabled: true,
+  nudgeEveryMinutes: 15,
+  nudgeIdleMinutes: 10,
+  nudgeWorkStart: '08:00',
+  nudgeWorkEnd: '18:00',
+  nudgeWorkDays: [0, 1, 2, 3, 4],
+  nudgeWorkingStatuses: null,
+  nudgeOverdueEnabled: true,
+  nudgeOverdueDays: 1,
+  nudgeCheckEnabled: true,
+  nudgeCheckMinutes: 90,
+  nudgeSnoozeUntil: null,
   lastBoardId: null,
   lastProjectKey: null,
   lastIssueTypeId: null,
   lastOptionFieldsByProject: {}
+};
+
+const NUDGE_KEYS = {
+  enabled: 'nudgesEnabled',
+  everyMinutes: 'nudgeEveryMinutes',
+  idleMinutes: 'nudgeIdleMinutes',
+  workStart: 'nudgeWorkStart',
+  workEnd: 'nudgeWorkEnd',
+  workDays: 'nudgeWorkDays',
+  workingStatuses: 'nudgeWorkingStatuses',
+  overdueEnabled: 'nudgeOverdueEnabled',
+  overdueDays: 'nudgeOverdueDays',
+  checkEnabled: 'nudgeCheckEnabled',
+  checkMinutes: 'nudgeCheckMinutes'
 };
 
 function createSettings() {
@@ -28,4 +54,4 @@ function createSettings() {
   };
 }
 
-module.exports = { createSettings, DEFAULTS };
+module.exports = { createSettings, DEFAULTS, NUDGE_KEYS };

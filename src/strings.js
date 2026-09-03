@@ -8,6 +8,7 @@ const ERROR_TEXT = {
   'rate-limited': 'Jira قال استنى شوية (rate limit). جرّب كمان لحظة.',
   'jira-unavailable': 'Jira نفسه واقع دلوقتي.',
   'unexpected-response': 'Jira رجّع رد مش متوقع.',
+  rejected: 'Jira رفض الطلب:',
   'not-configured': 'مفيش إعدادات — افتح الإعدادات وحطّ بيانات Jira.',
   'save-failed': 'مقدرناش نحفظ الإعدادات.',
   'site-required': 'اكتب اسم الموقع',
@@ -34,10 +35,49 @@ const TRAY_TEXT = {
   startWithWindows: 'يشتغل مع ويندوز',
   startWithMac: 'يشتغل مع الماك',
   startWithLinux: 'يشتغل مع لينكس',
+  nudges: 'النكزات',
+  nudgeSnoozeHour: 'سكّت ساعة',
+  nudgeSnoozeTomorrow: 'سكّت لحد بكرة',
+  nudgeWake: 'رجّعها تنكز',
+  nudgeSnoozedUntil: (time) => `ساكتة لحد ${time}`,
   checkUpdates: 'شوف لو فيه تحديث',
   checkingUpdates: 'بيدوّر على تحديث…',
   downloadingUpdate: 'بينزّل التحديث…',
   updateReady: (version) => `تحديث ${version} جاهز — سطّبه دلوقتي`
+};
+
+function count(amount, one, two, few, many) {
+  if (amount === 1) return one;
+  if (amount === 2) return two;
+  return `${amount} ${amount <= 10 ? few : many}`;
+}
+
+function spellDays(days) {
+  return count(days, 'يوم', 'يومين', 'أيام', 'يوم');
+}
+
+function spell(minutes) {
+  if (minutes < 60) return count(minutes, 'دقيقة', 'دقيقتين', 'دقايق', 'دقيقة');
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return count(hours, 'ساعة', 'ساعتين', 'ساعات', 'ساعة');
+
+  return spellDays(Math.floor(hours / 24));
+}
+
+const NUDGE_TEXT = {
+  stillOnIt: (key, minutes) => ({
+    title: `طيف — ${key} لسه شغال عليها؟`,
+    body: `بقالها ${spell(minutes)} In Progress. لو خلصت اقفلها، ولو لسه سيبها وكمّل.`
+  }),
+  nothingInProgress: (count) => ({
+    title: 'طيف — مفيش تاسك شغال عليها',
+    body: `عندك ${count} تاسك مفتوحة ومفيش ولا واحدة In Progress. دوس هنا وحرّك واحدة.`
+  }),
+  overdue: (key, days) => ({
+    title: `طيف — ${key} عدّى معادها`,
+    body: `كان المفروض تتقفل من ${spellDays(days)}. لو خلصت اقفلها، ولو محتاجة وقت غيّر التاريخ.`
+  })
 };
 
 const NOTIFICATION_TEXT = {
@@ -47,6 +87,26 @@ const NOTIFICATION_TEXT = {
   createFailed: (reason) => `التاسك ماتعملتش — ${reason}`
 };
 
+function jiraComplaints(detail) {
+  const text = String(detail || '').trim();
+  if (!text) return '';
+
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    return text;
+  }
+
+  return [
+    ...(Array.isArray(body.errorMessages) ? body.errorMessages : []),
+    ...Object.values(body.errors || {})
+  ]
+    .map((one) => String(one).trim())
+    .filter(Boolean)
+    .join('  ·  ');
+}
+
 function errorText(error) {
   if (!error) return ERROR_TEXT['unexpected-response'];
   const known = ERROR_TEXT[error.code];
@@ -54,7 +114,11 @@ function errorText(error) {
   if (error.code === 'jira-unavailable' && error.status) {
     return `${known} (${error.status})`;
   }
+  if (error.code === 'unexpected-response') {
+    const complaints = jiraComplaints(error.detail);
+    if (complaints) return `${ERROR_TEXT.rejected} ${complaints}`;
+  }
   return known;
 }
 
-module.exports = { ERROR_TEXT, TRAY_TEXT, NOTIFICATION_TEXT, errorText };
+module.exports = { ERROR_TEXT, TRAY_TEXT, NUDGE_TEXT, NOTIFICATION_TEXT, errorText, jiraComplaints };

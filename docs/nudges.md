@@ -7,13 +7,15 @@ what somebody else did. They are separate systems and they should stay separate.
 
 ## Why nudge at all
 
-A board is only useful if it is true, and there are two ways yours lies:
+A board is only useful if it is true, and there are three ways yours lies:
 
 - you are working and nothing is In Progress — the board says you are idle, and you
   simply forgot to move the card
-- a card has been In Progress since yesterday and you moved on without closing it
+- a card says In Progress but you finished it an hour ago and never closed it
+- a card's date has passed and the card is still open — the board is still promising a
+  day that is already gone
 
-Both are the same failure: the board drifts away from the work. Nobody fixes that by
+They are the same failure: the board drifts away from the work. Nobody fixes that by
 remembering harder.
 
 ## The rules
@@ -34,13 +36,43 @@ the fix is always one keystroke away.
 Snooze is not a nice-to-have. An hour, until tomorrow, done for today. Without it the
 system is hostile and gets switched off, which costs more than never having built it.
 
-The stale case is quieter on purpose: a card left In Progress for more than a day earns
-one nudge a day, not one every fifteen minutes.
+While a card *is* In Progress, the question changes from "start something" to "are you
+still on this?" — asked every ninety minutes, and only once the card has been running
+that long, so picking up a task does not immediately get you asked about it.
+
+The late case is quieter still: a card whose due date has passed — by a day of grace, so
+the deadline itself is not the alarm — earns one nudge a day, not one every ninety
+minutes. It also claims the card: a card that is late is the overdue nudge's, and Tayf
+will not also ask whether you are still on it, because "you are past the date" already
+contains "are you still on this". Every other In Progress card is still asked about
+normally — and if you switch the overdue nudge off, late cards go back to being asked
+about too, rather than falling silent with nobody watching them.
+
+A card with no due date is never late. Nothing to be late against.
+
+## What counts as work in your hands
+
+Jira sorts every status into three buckets, and the middle one — `indeterminate` — is
+where it puts everything that is neither new nor finished. On a real board that is nine
+statuses, and only one of them means you are actually doing the work. Ready For Testing,
+Testing In Progress, Ready For Build / Review: the ticket is moving, but it is moving in
+somebody else's hands, and you should be picking up the next thing.
+
+So the working statuses are a setting: name the ones that mean the ticket is yours, and
+everything else in that bucket is treated as handed off. Handed-off tickets are not
+"still on it?" material and they are not what "go move a card" is counting either — the
+count is what you could actually start. Name nothing and Tayf falls back to trusting
+Jira's bucket, which is what it did before this was configurable.
+
+A date that has passed still nudges, whoever is holding the ticket. It is still your name
+on it, and you can chase the tester or move the date.
 
 ## Every number here is a setting
 
-Fifteen minutes, ten minutes idle, 08:00–18:00, one day stale. Those are defaults, not
-rules — all of them are editable, because one company's hours are not everybody's.
+Fifteen minutes, ten minutes idle, 08:00–18:00, ninety minutes between check-ins, one day
+of grace past a due date. Those are defaults, not rules — all of them are editable, and
+the check-in and the overdue nudge can each be switched off on their own, because one
+company's hours are not everybody's.
 
 ## Where it lives
 
@@ -51,3 +83,12 @@ time and shows the notification.
 
 This is the same separation the rest of the codebase follows — see
 [architecture.md](architecture.md).
+
+## Trying one without waiting for the clock
+
+`npm run try-nudge` runs the real policy against your real settings and your cached board,
+then prints which gate is closed — switched off, snoozed, away from the machine, outside
+working hours, nothing to move — and what each task looks like to it. Add `--anyway` to
+ignore the clock and the idle check and actually show the toast, or `--all` to see all
+three kinds in a row. It is the fastest way to tell a policy that stays quiet on purpose
+from a notification the system swallowed.
