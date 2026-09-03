@@ -1,7 +1,7 @@
 {
   "name": "tayf",
   "productName": "Tayf",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A keyboard-first overlay for your Jira work items — press a hotkey anywhere, act, and get back to what you were doing.",
   "main": "src/main/index.js",
   "license": "MIT",
