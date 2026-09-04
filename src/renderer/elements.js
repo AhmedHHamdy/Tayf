@@ -1,6 +1,8 @@
 const IDS = [
-  'backdrop', 'panel', 'bar', 'prompt', 'search',
-  'banner', 'fail', 'ok', 'filters', 'ctx', 'list', 'msg',
+  'backdrop', 'stage', 'side', 'panel', 'bar', 'prompt', 'search',
+  'ctx', 'list', 'msg', 'toasts',
+  'boardbar', 'filters', 'brdwrap', 'brdbtn', 'brdname', 'brdlist', 'views',
+  'today', 'ringwrap', 'tsub', 'active', 'hints',
   'settings', 'snav', 'pconn', 'pnudge', 'pgen', 'pappear', 'tokenlink',
   'ssite', 'semail', 'stoken', 'snote',
   'shotkey', 'saddkey', 'sauto', 'sautotext',

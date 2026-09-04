@@ -22,6 +22,8 @@ const DEFAULTS = {
   theme: 'tokyo',
   font: 'default',
   uiScale: 1,
+  boardView: 'compact',
+  boardFilterId: null,
   lastBoardId: null,
   lastProjectKey: null,
   lastIssueTypeId: null,

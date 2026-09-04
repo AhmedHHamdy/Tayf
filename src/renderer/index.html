@@ -9,19 +9,60 @@
 </head>
 <body>
 <div id="backdrop">
+ <div id="stage">
+  <div id="side">
+    <div class="card" id="today">
+      <div class="tinfo">
+        <div class="tname">تقدم النهاردة</div>
+        <div class="thint" id="tsub"></div>
+      </div>
+      <div id="ringwrap"></div>
+    </div>
+
+    <div class="card" id="active"></div>
+
+    <div class="card" id="hints">
+      <div class="hname">اختصارات الكيبورد</div>
+      <div class="hrow"><span>البحث</span><kbd>Ctrl K</kbd></div>
+      <div class="hrow"><span>تاسك جديدة</span><kbd>Ctrl N</kbd></div>
+      <div class="hrow"><span>فلتر بالبورد</span><kbd>Ctrl B</kbd></div>
+      <div class="hrow"><span>صف واحد / سطرين</span><kbd>Ctrl L</kbd></div>
+    </div>
+  </div>
+
   <div id="panel">
     <div id="bar">
       <span id="prompt">&rsaquo;</span>
       <input id="search" placeholder="دوّر على تاسك" autofocus spellcheck="false" />
+      <kbd id="barkey">Ctrl K</kbd>
     </div>
-    <div id="banner"></div>
-    <div id="fail"></div>
-    <div id="ok"></div>
-    <div id="filters">
-      <span class="fil on" data-f="all"><b>Alt1</b>الكل</span>
-      <span class="fil" data-f="today"><b>Alt2</b>النهاردة</span>
-      <span class="fil" data-f="late"><b>Alt3</b>متأخرة</span>
-      <span class="fil" data-f="wip"><b>Alt4</b>شغال عليها</span>
+    <div id="boardbar">
+      <div id="filters">
+        <span class="fil on" data-f="all">الكل<b>Alt1</b></span>
+        <span class="fil" data-f="today">النهاردة<b>Alt2</b></span>
+        <span class="fil" data-f="late">متأخرة<b>Alt3</b></span>
+        <span class="fil" data-f="wip">شغال عليها<b>Alt4</b></span>
+      </div>
+      <div id="brdwrap">
+        <span id="brdbtn">
+          <span class="blabel">البورد</span>
+          <span id="brdname"></span>
+          <span class="bcaret">&#9662;</span>
+        </span>
+        <div id="brdlist"></div>
+      </div>
+      <div id="views">
+        <button class="vbtn" data-v="compact" title="صف واحد">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M2.5 4h11M2.5 8h11M2.5 12h11" />
+          </svg>
+        </button>
+        <button class="vbtn" data-v="roomy" title="سطرين">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M2.5 3.5h11M2.5 6.5h6M2.5 10.5h11M2.5 13.5h6" />
+          </svg>
+        </button>
+      </div>
     </div>
     <div id="ctx"></div>
     <div id="list"></div>
@@ -341,12 +382,11 @@
     </div>
 
     <div id="foot">
-      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> تنقل</span>
-      <span><kbd>&larr;</kbd> خيارات التاسك</span>
-      <span><kbd>Enter</kbd> عرض التاسك</span>
-      <span><kbd>Tab</kbd> غيّر الحالة</span>
-      <span><kbd>Esc</kbd> اقفل</span>
       <span id="meta"></span>
+      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> تنقل</span>
+      <span><kbd>&larr;</kbd> خيارات</span>
+      <span><kbd>Tab</kbd> غيّر الحالة</span>
+      <span><kbd>Ctrl L</kbd> شكل القائمة</span>
     </div>
     <div id="foots">
       <span><kbd>Tab</kbd> تنقل</span>
@@ -384,7 +424,9 @@
       <span id="metaf"></span>
     </div>
   </div>
-  <div id="actions"></div>
+ </div>
+ <div id="actions"></div>
+ <div id="toasts"></div>
 </div>
 </body>
 </html>

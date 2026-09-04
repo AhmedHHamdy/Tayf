@@ -2,6 +2,7 @@ import { setWorkspace } from './state.js';
 import { registerScreen, goTo, repaint } from './navigation.js';
 import { setFlash } from './chrome.js';
 import { installKeyboard } from './keyboard.js';
+import { installBoard, adoptPreferences } from './board.js';
 import { taskListScreen } from './screens/task-list.js';
 import { transitionsScreen } from './screens/transitions.js';
 import { transitionFormScreen } from './screens/transition-form.js';
@@ -55,7 +56,12 @@ window.tayf.onShown((payload) => {
 relabelForMac();
 installKeyboard();
 
-window.tayf.readPreferences().then(applyPreferences);
+installBoard(repaint);
+
+window.tayf.readPreferences().then((preferences) => {
+  applyPreferences(preferences);
+  adoptPreferences(preferences);
+});
 
 window.tayf.state().then((next) => {
   setWorkspace(next);

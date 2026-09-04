@@ -59,7 +59,9 @@ module.exports = [
         navigator: 'readonly',
         console: 'readonly',
         setTimeout: 'readonly',
+        setInterval: 'readonly',
         clearTimeout: 'readonly',
+        clearInterval: 'readonly',
         requestAnimationFrame: 'readonly',
         Event: 'readonly',
         KeyboardEvent: 'readonly'

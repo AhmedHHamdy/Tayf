@@ -12,6 +12,8 @@ export const state = {
   rows: [],
   selectedIndex: 0,
   filter: 'all',
+  view: 'compact',
+  boardId: null,
   busy: false
 };
 

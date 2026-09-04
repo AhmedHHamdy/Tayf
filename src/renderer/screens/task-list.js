@@ -3,6 +3,9 @@ import { state, clampSelection, isInHand } from '../state.js';
 import { goTo } from '../navigation.js';
 import { showLayout, setContext, paintBanners, setFooterMeta, itemCountMeta } from '../chrome.js';
 import { paintRows, itemRowHtml } from '../list-view.js';
+import { paintSidebar } from '../sidebar.js';
+import { syncTicker } from '../board.js';
+import { currentBoardName } from '../board-picker.js';
 import { toIsoDate } from '../dates.js';
 
 const SETUP_STEPS =
@@ -23,12 +26,24 @@ const MATCHES_FILTER = {
   wip: (item) => isInHand(item)
 };
 
+const SECTIONS = [
+  { id: 'today', label: 'النهاردة', tone: '', match: (item, today) => item.due === today },
+  { id: 'late', label: 'متأخرة', tone: 'late', match: (item, today) => !!item.due && item.due < today },
+  { id: 'next', label: 'جاي', tone: '', match: (item, today) => !!item.due && item.due > today },
+  { id: 'none', label: 'من غير معاد', tone: '', match: (item) => !item.due }
+];
+
+function onBoard(item) {
+  if (state.boardId === null) return true;
+  return (item.boards || []).some((board) => board.id === state.boardId);
+}
+
 export function visibleItems() {
   const today = toIsoDate(new Date());
   const query = elements.search.value.trim().toLowerCase();
 
-  const filtered = state.workspace.items.filter((item) =>
-    MATCHES_FILTER[state.filter](item, today)
+  const filtered = state.workspace.items.filter(
+    (item) => MATCHES_FILTER[state.filter](item, today) && onBoard(item)
   );
   if (!query) return filtered;
 
@@ -37,6 +52,18 @@ export function visibleItems() {
     const haystack = `${item.key} ${item.title} ${item.type || ''} ${boards}`;
     return haystack.toLowerCase().includes(query);
   });
+}
+
+function groupItems(items) {
+  const today = toIsoDate(new Date());
+  return SECTIONS.map((section) => ({
+    section,
+    items: items.filter((item) => section.match(item, today))
+  })).filter((group) => group.items.length);
+}
+
+export function orderedItems() {
+  return groupItems(visibleItems()).flatMap((group) => group.items);
 }
 
 export function setFilter(name) {
@@ -49,6 +76,13 @@ export function setFilter(name) {
   elements.search.focus();
 }
 
+function paintBoardBar() {
+  elements.brdname.textContent = currentBoardName();
+  Array.from(elements.views.children).forEach((button) => {
+    button.classList.toggle('on', button.dataset.v === state.view);
+  });
+}
+
 export const taskListScreen = {
   name: 'tasks',
 
@@ -57,7 +91,7 @@ export const taskListScreen = {
     elements.search.value = '';
     elements.search.placeholder = 'دوّر على تاسك';
 
-    const rows = visibleItems();
+    const rows = orderedItems();
     const index = restoreKey ? rows.findIndex((row) => row.key === restoreKey) : -1;
     state.selectedIndex = index >= 0 ? index : 0;
 
@@ -75,14 +109,28 @@ export const taskListScreen = {
       elements.msg.innerHTML = SETUP_STEPS;
       state.rows = [];
       setFooterMeta('meta', '');
+      paintSidebar();
+      syncTicker(false);
       return;
     }
 
-    const rows = visibleItems();
+    paintBoardBar();
+
+    const groups = groupItems(visibleItems());
+    const rows = groups.flatMap((group) => group.items);
+
+    const headers = new Map();
+    let at = 0;
+    groups.forEach((group) => {
+      headers.set(at, { ...group.section, count: group.items.length });
+      at += group.items.length;
+    });
+
     const empty = elements.search.value ? 'مفيش نتايج.' : 'مفيش تاسكات مسندة ليك.';
-    paintRows(rows, empty, (item, _index, selected) => itemRowHtml(item, selected));
+    paintRows(rows, empty, (item, index, selected) => itemRowHtml(item, selected, index), headers);
     clampSelection();
     setFooterMeta('meta', itemCountMeta());
+    syncTicker(!!paintSidebar());
   }
 };
 

@@ -64,3 +64,96 @@ export function relativeTime(timestamp) {
   if (seconds < 3600) return `من ${Math.round(seconds / 60)}د`;
   return `من ${Math.round(seconds / 3600)}س`;
 }
+
+const PRIORITY_LEVELS = [
+  { match: /highest|blocker|critical|أعلى|حرج|عاجل/, label: 'عاجلة', className: 'pr-top' },
+  { match: /lowest|أدنى|trivial/, label: 'أدنى', className: 'pr-low' },
+  { match: /high|عالي|مرتفع|major/, label: 'عالية', className: 'pr-high' },
+  { match: /medium|normal|متوسط|عادي/, label: 'متوسطة', className: 'pr-mid' },
+  { match: /low|منخفض|minor/, label: 'منخفضة', className: 'pr-low' }
+];
+
+const DURATION_UNITS = { w: 144000, d: 28800, h: 3600, m: 60 };
+const DURATION_PART = /(\d+(?:\.\d+)?)\s*([wdhm])/g;
+const DAY_SECONDS = 86400;
+const HOUR_SECONDS = 3600;
+
+export function priorityBadge(priority) {
+  const name = String(priority || '').toLowerCase();
+  if (!name) return null;
+  const level = PRIORITY_LEVELS.find((candidate) => candidate.match.test(name));
+  return level
+    ? { label: level.label, className: level.className }
+    : { label: priority, className: 'pr-mid' };
+}
+
+export function durationSeconds(text) {
+  let total = 0;
+  for (const part of String(text || '').toLowerCase().matchAll(DURATION_PART)) {
+    total += Number(part[1]) * DURATION_UNITS[part[2]];
+  }
+  return total;
+}
+
+export function shortDuration(seconds) {
+  const minutes = Math.max(0, Math.round(seconds / 60));
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (!hours) return `${rest}m`;
+  if (!rest) return `${hours}h`;
+  return `${hours}h ${String(rest).padStart(2, '0')}m`;
+}
+
+export function coarseDuration(seconds) {
+  const days = Math.floor(seconds / DAY_SECONDS);
+  const hours = Math.floor((seconds % DAY_SECONDS) / HOUR_SECONDS);
+  if (days && hours) return `${days}d ${hours}h`;
+  if (days) return `${days}d`;
+  return `${Math.max(1, hours)}h`;
+}
+
+export function overdueSeconds(due, now = Date.now()) {
+  if (!due) return 0;
+  const deadline = new Date(`${due}T23:59:59`).getTime();
+  if (Number.isNaN(deadline)) return 0;
+  return Math.max(0, Math.round((now - deadline) / 1000));
+}
+
+export function spentSeconds(item) {
+  return item.spentSeconds || durationSeconds(item.spent);
+}
+
+export function remainingSeconds(item) {
+  const estimate = durationSeconds(item.estimate);
+  if (!estimate) return 0;
+  return Math.max(0, estimate - spentSeconds(item));
+}
+
+export function workingSince(item, now = Date.now()) {
+  const started = Date.parse(item.categoryChangedAt || '');
+  if (!started) return 0;
+  return Math.max(0, Math.round((now - started) / 1000));
+}
+
+export function budgetDeadline(item) {
+  const started = Date.parse(item.categoryChangedAt || '');
+  if (!started || !durationSeconds(item.estimate)) return null;
+  return started + remainingSeconds(item) * 1000;
+}
+
+export function overtimeSeconds(item, now = Date.now()) {
+  const deadline = budgetDeadline(item);
+  if (deadline === null) return 0;
+  return Math.max(0, Math.round((now - deadline) / 1000));
+}
+
+export function clockTime(timestamp) {
+  try {
+    return new Date(timestamp).toLocaleTimeString('ar-EG-u-nu-latn', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  } catch {
+    return '';
+  }
+}

@@ -112,7 +112,11 @@ function start() {
       theme: settings.get('theme'),
       font: settings.get('font'),
       uiScale: settings.get('uiScale'),
-      nudges: readNudges(settings)
+      nudges: readNudges(settings),
+      board: {
+        view: settings.get('boardView'),
+        boardId: settings.get('boardFilterId')
+      }
     }),
     savePreferences: (patch) => {
       if (patch.toggleHotkey) hotkeys.choose(patch.toggleHotkey);
@@ -126,6 +130,12 @@ function start() {
         overlay.setZoom(patch.uiScale);
       }
       if (patch.nudges) settings.remember(storedNudges(patch.nudges));
+      if (patch.board) {
+        settings.remember({
+          boardView: patch.board.view,
+          boardFilterId: patch.board.boardId
+        });
+      }
       tray.update();
       return actions.readPreferences();
     },

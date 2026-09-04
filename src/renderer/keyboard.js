@@ -2,6 +2,15 @@ import elements from './elements.js';
 import { state, selectedRow } from './state.js';
 import { goTo, activeScreenName, repaint } from './navigation.js';
 import { moveSelection } from './list-view.js';
+import { cycleView, setView, setBoardFilter } from './board.js';
+import {
+  isOpen as pickerIsOpen,
+  openPicker,
+  closePicker,
+  movePicker,
+  choosePicker,
+  installBoardPicker
+} from './board-picker.js';
 import { setFlash } from './chrome.js';
 import { QUICK_DATES } from './dates.js';
 import { FILTERS, setFilter, backToTaskList } from './screens/task-list.js';
@@ -179,8 +188,33 @@ function handleActionMenu(event, key) {
   return true;
 }
 
+function handleBoardPicker(event) {
+  if (event.key === 'ArrowDown') movePicker(1);
+  else if (event.key === 'ArrowUp') movePicker(-1);
+  else if (event.key === 'Enter') choosePicker();
+  else closePicker();
+  event.preventDefault();
+  return true;
+}
+
+function handleBoardKeys(event, key) {
+  if (hasCommandModifier(event) && key === 'b') {
+    event.preventDefault();
+    openPicker();
+    return true;
+  }
+  if (hasCommandModifier(event) && key === 'l') {
+    event.preventDefault();
+    cycleView();
+    return true;
+  }
+  return false;
+}
+
 function handleList(event, key, screen) {
   const onTaskList = screen === 'tasks';
+
+  if (onTaskList && handleBoardKeys(event, key)) return true;
 
   if (onTaskList && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
     event.preventDefault();
@@ -280,6 +314,11 @@ export function installKeyboard() {
       return;
     }
 
+    if (pickerIsOpen()) {
+      handleBoardPicker(event);
+      return;
+    }
+
     if (menuIsOpen()) {
       handleActionMenu(event, key);
       return;
@@ -290,11 +329,13 @@ export function installKeyboard() {
 
   elements.search.addEventListener('input', () => {
     closeMenu();
+    closePicker();
     state.selectedIndex = 0;
     repaint();
   });
 
-  elements.fail.addEventListener('click', () => {
+  elements.toasts.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-dismiss="failure"]')) return;
     state.workspace.failure = null;
     window.tayf.clearFailure();
     repaint();
@@ -304,6 +345,13 @@ export function installKeyboard() {
     const chip = event.target.closest('.fil');
     if (chip) setFilter(chip.dataset.f);
   });
+
+  elements.views.addEventListener('click', (event) => {
+    const button = event.target.closest('.vbtn');
+    if (button) setView(button.dataset.v);
+  });
+
+  installBoardPicker(setBoardFilter);
 }
 
 export { setFlash };

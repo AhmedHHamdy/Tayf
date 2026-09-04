@@ -73,6 +73,41 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
   control past its 260px basis and squeezed the label column until it wrapped one word
   per line. A flex item's default `min-width: auto` refuses to go below its content;
   `min-width: 0` lets the declared width hold.
+- **The board was rebuilt to the new design.** The task list is no longer one flat run of
+  rows. It groups under النهاردة / متأخرة / جاي / من غير معاد with a count on each header,
+  and every row now carries its priority, the time it has left — or how far past its due
+  date it is, in red — beside the status it already showed. Its selected row, its ring and
+  its timer all take `--accent`, so the board wears whichever theme you picked rather than
+  a colour of its own.
+
+- **Two shapes for the list, on `Ctrl L`.** صف واحد keeps a task to a single line; سطرين
+  gives the title its own line and puts the key, type, board and priority underneath it,
+  with the status as a pill. The pair of icons next to the board filter switches between
+  them, and the choice is remembered.
+
+- **A board filter, on `Ctrl B`.** The dropdown beside the filter chips lists the boards
+  your own tasks are actually on — built from what is already loaded, so it costs no
+  request — and narrows the list to one of them. Remembered like the view.
+
+- **A side panel next to the list.** Three cards: how much of today is done, as a ring;
+  the task in your hands, with its progress and the timer under it; and the shortcuts.
+  It hides itself under 1140px, where there is no room for it.
+
+- **Messages float instead of shoving the panel.** “اتعملت”, “اتحفظ”, a failed action and
+  a lost connection were three strips wedged between the search box and the list, so every
+  one of them pushed the tasks down the moment it appeared and pulled them back up eight
+  seconds later. They are now one stack of cards floating clear of the panel at the bottom
+  of the screen, each with an icon for what it is, and a failure still closes on a click.
+  Form feedback did not move — a validation message belongs beside the field it is about,
+  not in a corner.
+
+- **The timer starts itself.** There is nothing to press: a task is timed from the moment
+  Jira says it entered In Progress — `statuscategorychangedate`, which is already on the
+  board — so the count is right even when the overlay was closed the whole time. While it
+  is still inside its estimate the side panel counts up and says what time it should close
+  by; once it goes past, the reading flips to `+42m` in red, the line under it becomes
+  كان المفروض تقفل, and the bar turns red with it. The row carries the same number, without
+  the second line.
 
 ## [0.7.0] - 2026-09-03
 

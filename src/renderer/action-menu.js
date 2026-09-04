@@ -2,6 +2,7 @@ import elements from './elements.js';
 import { state, selectedRow } from './state.js';
 import { goTo, activeScreenName } from './navigation.js';
 import { escapeHtml } from './format.js';
+import { rowElement } from './list-view.js';
 
 const EDGE_GAP = 8;
 const ROW_OFFSET = 4;
@@ -42,7 +43,7 @@ function draw() {
 }
 
 function place() {
-  const row = elements.list.children[state.selectedIndex];
+  const row = rowElement(state.selectedIndex);
   const panel = elements.panel.getBoundingClientRect();
   const anchor = row ? row.getBoundingClientRect() : panel;
   const width = elements.actions.offsetWidth || FALLBACK_WIDTH;

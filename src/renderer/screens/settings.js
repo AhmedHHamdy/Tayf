@@ -1,6 +1,6 @@
 import elements from '../elements.js';
 import { state } from '../state.js';
-import { showLayout, paintBanners, setContext } from '../chrome.js';
+import { showLayout, paintBanners, setContext, setFlash } from '../chrome.js';
 import { backToTaskList } from './task-list.js';
 import { APPEARANCES, THEMES, FONTS, SCALES, applyPreferences } from '../appearance.js';
 import { createSelect } from '../select.js';
@@ -176,7 +176,12 @@ async function savePreference(patch) {
     refused(patch.toggleHotkey, preferences.toggleHotkey, preferences.toggleChoices) ||
     refused(patch.composeHotkey, preferences.composeHotkey, preferences.composeChoices);
 
-  setNote(problem || 'اتحفظ.', problem ? 'bad' : 'good');
+  if (problem) {
+    setNote(problem, 'bad');
+    return;
+  }
+  setNote('', '');
+  setFlash('اتحفظ', 'done');
 }
 
 export function showTab(name) {
