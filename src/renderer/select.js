@@ -33,11 +33,18 @@ function buildPanel() {
   panel.hidden = true;
   document.body.appendChild(panel);
 
-  document.addEventListener('mousedown', (event) => {
-    if (!active) return;
-    if (panel.contains(event.target) || active.holds(event.target)) return;
-    active.close();
-  });
+  // capture مش bubble: الاختيار بيعيد رسم القايمة، فلما ييجي دور الـ bubble
+  // يكون العنصر المدوس عليه اتشال خلاص و panel.contains بيرجع false — وساعتها
+  // كنا بنقفل اللوحة وإحنا فاكرين إن الدوسة كانت برّه.
+  document.addEventListener(
+    'mousedown',
+    (event) => {
+      if (!active) return;
+      if (panel.contains(event.target) || active.holds(event.target)) return;
+      active.close();
+    },
+    true
+  );
   window.addEventListener('resize', () => active && active.close());
 
   return panel;
@@ -56,6 +63,8 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
   let highlighted = 0;
   let query = '';
   let open = false;
+  let listBox = null;
+  let searchBox = null;
 
   host.classList.add('sel');
   host.innerHTML =
@@ -93,15 +102,22 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
     valueSlot.innerHTML = `${dot}<span class="sel-text">${escapeHtml(text)}</span>`;
   }
 
-  function drawPanel() {
-    const visible = matching();
-    if (highlighted >= visible.length) highlighted = Math.max(0, visible.length - 1);
-
+  // اللوحة بتتبني مرة واحدة عند الفتح، والقايمة لوحدها هي اللي بتتعاد.
+  // كده خانة البحث ماتتمسحش تحت إيد المستخدم والفوكس يفضل فيها بعد كل اختيار.
+  function buildShell() {
     const search = wantsSearch()
       ? '<div class="sel-search"><input type="text" spellcheck="false" placeholder="دوّر…" /></div>'
       : '';
+    panel.innerHTML = `${search}<div class="sel-list" role="listbox"></div>`;
+    listBox = panel.querySelector('.sel-list');
+    searchBox = panel.querySelector('.sel-search input');
+  }
 
-    const list = visible.length
+  function drawList() {
+    const visible = matching();
+    if (highlighted >= visible.length) highlighted = Math.max(0, visible.length - 1);
+
+    listBox.innerHTML = visible.length
       ? visible
           .map((option, index) => {
             const marks =
@@ -115,9 +131,7 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
           .join('')
       : '<div class="sel-empty">مفيش نتايج</div>';
 
-    panel.innerHTML = `${search}<div class="sel-list" role="listbox">${list}</div>`;
-
-    const current = panel.querySelectorAll('.sel-opt')[highlighted];
+    const current = listBox.children[highlighted];
     if (current && current.scrollIntoView) current.scrollIntoView({ block: 'nearest' });
   }
 
@@ -141,11 +155,6 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
     panel.style.left = `${left}px`;
   }
 
-  function focusSearch() {
-    const input = panel.querySelector('.sel-search input');
-    if (input) input.focus();
-  }
-
   function openPanel() {
     if (open) return;
     if (active) active.close();
@@ -160,9 +169,10 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
 
     active = api;
     trigger.setAttribute('aria-expanded', 'true');
-    drawPanel();
+    buildShell();
+    drawList();
     place();
-    focusSearch();
+    if (searchBox) searchBox.focus();
   }
 
   function closePanel({ refocus } = {}) {
@@ -184,7 +194,7 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
       if (accepted === false) return;
       chosen = next;
       drawTrigger();
-      drawPanel();
+      drawList();
       return;
     }
 
@@ -199,7 +209,7 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
     const visible = matching();
     if (!visible.length) return;
     highlighted = Math.max(0, Math.min(highlighted + delta, visible.length - 1));
-    drawPanel();
+    drawList();
   }
 
   function onKey(event) {
@@ -216,7 +226,8 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
       event.preventDefault();
       event.stopPropagation();
       move(event.key === 'ArrowDown' ? 1 : -1);
-    } else if (event.key === 'Enter') {
+    } else if (event.key === 'Enter' || (event.key === ' ' && !searchBox)) {
+      // المسافة بتعلّم زي Enter، إلا لما يكون فيه بحث — ساعتها هي مسافة عادية.
       event.preventDefault();
       event.stopPropagation();
       const target = matching()[highlighted];
@@ -226,7 +237,9 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
       event.stopPropagation();
       closePanel({ refocus: true });
     } else if (event.key === 'Tab') {
-      closePanel();
+      // الفوكس بيرجع للزرار عشان Tab يكمّل من عنده للكنترول اللي بعده،
+      // مش من جوه لوحة اتخفت لسه.
+      closePanel({ refocus: true });
     }
   }
 
@@ -237,16 +250,10 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
     if (active === api) onKey(event);
   });
   panel.addEventListener('input', (event) => {
-    if (active !== api || !event.target.matches('.sel-search input')) return;
-    query = event.target.value;
+    if (active !== api || event.target !== searchBox) return;
+    query = searchBox.value;
     highlighted = 0;
-    const input = event.target;
-    drawPanel();
-    const again = panel.querySelector('.sel-search input');
-    if (again) {
-      again.value = input.value;
-      again.focus();
-    }
+    drawList();
     place();
   });
   panel.addEventListener('mousedown', (event) => {
@@ -278,7 +285,7 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, summary
         chosen = options.some((option) => option.id === value) ? value : '';
       }
       drawTrigger();
-      if (open) drawPanel();
+      if (open) drawList();
     }
   };
 
