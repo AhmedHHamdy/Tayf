@@ -54,6 +54,13 @@ function fillOptions(select, options, current) {
     .join('');
 }
 
+function paintAppearance(current) {
+  const chosen = APPEARANCES.includes(current) ? current : 'system';
+  elements.sappearance.querySelectorAll('input').forEach((input) => {
+    input.checked = input.value === chosen;
+  });
+}
+
 function paintThemes(current) {
   elements.stheme.innerHTML = THEMES.map((theme) => {
     const on = theme.value === current ? ' on' : '';
@@ -104,7 +111,7 @@ function paintPreferences(preferences) {
   elements.sautotext.textContent =
     AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
 
-  fillOptions(elements.sappearance, APPEARANCES, preferences.appearance || 'system');
+  paintAppearance(preferences.appearance);
   fillOptions(elements.sscale, SCALES, preferences.uiScale || 1);
   paintThemes(preferences.theme || 'amber');
   applyPreferences(preferences);
@@ -235,9 +242,9 @@ elements.saddkey.addEventListener('change', () =>
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
-elements.sappearance.addEventListener('change', () =>
-  savePreference({ appearance: elements.sappearance.value })
-);
+elements.sappearance.addEventListener('change', (event) => {
+  if (event.target.checked) savePreference({ appearance: event.target.value });
+});
 elements.sscale.addEventListener('change', () =>
   savePreference({ uiScale: Number(elements.sscale.value) })
 );

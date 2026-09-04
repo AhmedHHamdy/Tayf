@@ -3,11 +3,8 @@
 
 const SYSTEM_LIGHT = window.matchMedia('(prefers-color-scheme: light)');
 
-export const APPEARANCES = [
-  { value: 'system', label: 'زي السيستم' },
-  { value: 'light', label: 'فاتح' },
-  { value: 'dark', label: 'غامق' }
-];
+// الأسامي المعروضة عايشة في index.html على أزرار المجموعة، فهنا القيم بس.
+export const APPEARANCES = ['system', 'light', 'dark'];
 
 export const THEMES = [
   { value: 'amber', label: 'كهرماني' },
@@ -32,7 +29,7 @@ function resolve() {
 }
 
 export function applyAppearance(next) {
-  preference = APPEARANCES.some((option) => option.value === next) ? next : 'system';
+  preference = APPEARANCES.includes(next) ? next : 'system';
   document.documentElement.dataset.appearance = resolve();
 }
 

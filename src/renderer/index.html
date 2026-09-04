@@ -32,31 +32,30 @@
         <div id="snav">
           <div class="sgroup">الإعدادات</div>
           <div class="snavitem on" data-t="conn">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
-              <path d="M6.4 9.6a2.8 2.8 0 0 0 4 0l2-2a2.8 2.8 0 1 0-4-4l-.7.7" />
-              <path d="M9.6 6.4a2.8 2.8 0 0 0-4 0l-2 2a2.8 2.8 0 1 0 4 4l.7-.7" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
             <span>الاتصال</span>
           </div>
           <div class="snavitem" data-t="nudge">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 6.6a4 4 0 0 1 8 0c0 3 1 4 1 4H3s1-1 1-4Z" />
-              <path d="M6.7 13a1.6 1.6 0 0 0 2.6 0" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
             </svg>
             <span>النكزات</span>
           </div>
           <div class="snavitem" data-t="gen">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
-              <path d="M2.5 5.5h11M2.5 10.5h11" />
-              <circle cx="6" cy="5.5" r="1.6" fill="currentColor" stroke="none" />
-              <circle cx="10.5" cy="10.5" r="1.6" fill="currentColor" stroke="none" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" />
+              <path d="M1 14h6M9 8h6M17 16h6" />
             </svg>
             <span>عام</span>
           </div>
           <div class="snavitem" data-t="appear">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
-              <circle cx="8" cy="8" r="5.6" />
-              <path d="M8 2.4a5.6 5.6 0 0 1 0 11.2Z" fill="currentColor" stroke="none" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none" />
             </svg>
             <span>المظهر</span>
           </div>
@@ -224,10 +223,39 @@
 
             <div class="srow">
               <div class="scell">
-                <label class="stitle" for="sappearance">فاتح ولا غامق</label>
+                <div class="stitle">فاتح ولا غامق</div>
                 <div class="shint">تقدر تسيبه يمشي ورا إعداد الويندوز.</div>
               </div>
-              <div class="sctl"><select id="sappearance"></select></div>
+              <div class="sctl sctl-end">
+                <div class="segmented" id="sappearance">
+                  <label title="زي السيستم">
+                    <input type="radio" name="appearance" value="system" />
+                    <span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <path d="M8 21h8M12 17v4" />
+                      </svg>
+                    </span>
+                  </label>
+                  <label title="فاتح">
+                    <input type="radio" name="appearance" value="light" />
+                    <span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                      </svg>
+                    </span>
+                  </label>
+                  <label title="غامق">
+                    <input type="radio" name="appearance" value="dark" />
+                    <span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                      </svg>
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div class="srow">

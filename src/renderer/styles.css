@@ -89,6 +89,12 @@
     --muted:   #9b9da6;
     --dim:     #777b8b;
 
+    /* خلفية الكنترول المرفوع — الاختيار الشغّال في مجموعة الأزرار */
+    --raised: #2b2b34;
+
+    /* سهم السيليكت — data URI فمش بيورث currentColor، فلكل وضع نسخته */
+    --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239b9da6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+
     --accent:      #f0a83c;
     --accent-bg:   color-mix(in srgb, var(--accent) 10%, transparent);
     --accent-line: color-mix(in srgb, var(--accent) 45%, transparent);
@@ -142,6 +148,9 @@
     --text-3:  #54565e;
     --muted:   #54565e;
     --dim:     #717480;
+
+    --raised: #ffffff;
+    --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2354565e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
 
     --accent:  #a3670d;
 
@@ -344,7 +353,7 @@
     padding: var(--sp-4); margin-bottom: var(--sp-1); border-radius: var(--r-3);
     font-size: var(--fs-body); color: var(--muted); cursor: pointer;
   }
-  .snavitem svg { width: 15px; height: 15px; flex: 0 0 15px; color: var(--dim); }
+  .snavitem svg { width: 16px; height: 16px; flex: 0 0 16px; color: var(--dim); }
   .snavitem:hover { background: var(--hover); color: var(--text-2); }
   .snavitem.on { background: var(--fill-2); color: var(--text); }
   .snavitem.on svg { color: var(--accent); }
@@ -372,15 +381,56 @@
   .sctl-end { flex: 0 0 auto; display: flex; justify-content: flex-end; }
   .sctl input, .sctl select {
     width: 100%; padding: var(--sp-4) var(--sp-5);
-    background: var(--fill);
+    background-color: var(--fill);
     border: 1px solid transparent; border-radius: var(--r-3);
     color: var(--text); font-size: var(--fs-body); font-family: var(--sans); outline: none;
   }
   .sctl input:focus, .sctl select:focus {
-    border-color: var(--accent-line); background: var(--accent-soft);
+    border-color: var(--accent-line); background-color: var(--accent-soft);
   }
   .sctl input::placeholder { color: var(--dim); }
   .sctl select option { background: var(--elev-2); color: var(--text); }
+
+  /* السيليكت — بنشيل شكل النظام ونحط سهمنا. الواجهة RTL فالسهم على الشمال. */
+  .sctl select, .cgrid select {
+    appearance: none;
+    background-image: var(--chevron);
+    background-repeat: no-repeat;
+    background-position: left var(--sp-5) center;
+    background-size: 12px 12px;
+    padding-inline-end: var(--sp-8);
+    cursor: pointer;
+  }
+  .sctl select:hover, .cgrid select:hover { background-color: var(--fill-2); }
+
+  /* مجموعة أزرار — بديل السيليكت لما الاختيارات قليلة وليها أيقونات.
+     راديو حقيقي مخفي جوه كل زر، فالتنقل بالأسهم والـ change بييجوا من المتصفح. */
+  .segmented {
+    display: inline-flex; gap: var(--sp-1);
+    padding: var(--sp-1);
+    background-color: var(--fill);
+    border: 1px solid var(--line);
+    border-radius: var(--r-3);
+  }
+  .segmented label { position: relative; display: flex; cursor: pointer; }
+  .segmented input {
+    position: absolute; inset: 0; margin: 0; padding: 0;
+    width: 100%; height: 100%; opacity: 0; cursor: pointer;
+  }
+  .segmented span {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 24px; border-radius: var(--r-2);
+    color: var(--muted);
+    transition: background-color .12s ease, color .12s ease;
+  }
+  .segmented svg { width: 15px; height: 15px; }
+  .segmented label:hover span { color: var(--text-2); }
+  .segmented input:checked + span {
+    background-color: var(--raised); color: var(--text);
+    box-shadow: 0 1px 2px rgba(0,0,0,.18);
+  }
+  .segmented input:focus-visible + span { outline: 2px solid var(--accent-line); outline-offset: var(--sp-1); }
+
   /* سويتش — الـ input الحقيقي مخفي جواه عشان الكيبورد والـ change listeners تفضل شغالة */
   .sw { position: relative; display: inline-flex; flex: none; cursor: pointer; }
   .sw input {
@@ -461,12 +511,12 @@
 
   .cgrid textarea {
     width: 100%; padding: var(--sp-4); resize: none;
-    background: var(--fill);
+    background-color: var(--fill);
     border: 1px solid transparent; border-radius: var(--r-3);
     color: var(--text); font-size: var(--fs-body); font-family: var(--sans);
     line-height: var(--lh-normal); outline: none;
   }
-  .cgrid textarea:focus { border-color: var(--accent-line); background: var(--accent-soft); }
+  .cgrid textarea:focus { border-color: var(--accent-line); background-color: var(--accent-soft); }
   .cgrid textarea::placeholder { color: var(--dim); }
   .cgrid label.top { align-self: start; padding-top: var(--sp-4); }
 
@@ -521,25 +571,25 @@
   }
   .cgrid select, .cgrid input {
     width: 100%; padding: var(--sp-3) var(--sp-4);
-    background: var(--fill);
+    background-color: var(--fill);
     border: 1px solid transparent; border-radius: var(--r-3);
     color: var(--text); font-size: var(--fs-body); font-family: var(--sans);
     outline: none;
   }
   .cgrid select:focus, .cgrid input:focus {
     border-color: var(--accent-line);
-    background: var(--accent-soft);
+    background-color: var(--accent-soft);
   }
   .cgrid select option { background: var(--elev-2); color: var(--text); }
   .cgrid .row-off { display: none; }
   .combo { position: relative; }
   .cinput {
     width: 100%; padding: var(--sp-3) var(--sp-4);
-    background: var(--fill);
+    background-color: var(--fill);
     border: 1px solid transparent; border-radius: var(--r-3);
     color: var(--text); font-size: var(--fs-body); font-family: var(--sans); outline: none;
   }
-  .cinput:focus { border-color: var(--accent-line); background: var(--accent-soft); }
+  .cinput:focus { border-color: var(--accent-line); background-color: var(--accent-soft); }
   .cinput::placeholder { color: var(--dim); }
   .clist {
     display: none; margin-top: var(--sp-2); max-height: 168px; overflow-y: auto;
