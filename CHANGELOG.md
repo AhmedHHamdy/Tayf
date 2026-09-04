@@ -8,16 +8,27 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 ### Added
 
 - **The overlay's look is yours to set.** A fourth settings tab, المظهر (Ctrl+4).
-  Light or dark can be pinned or left to follow the system; there are five accent
-  themes; and the whole overlay scales from 90% to 130% for anyone who finds it small.
-  "Follow the system" is settled in the renderer rather than in a media query, so the
-  light palette is written once instead of twice.
+  Light or dark can be pinned or left to follow the system; the whole overlay scales
+  from 90% to 130% for anyone who finds it small. "Follow the system" is settled in the
+  renderer rather than in a media query, so the light palette is written once instead
+  of twice.
+
+- **Five themes carried over from VS Code** — Tokyo Night, One Dark Pro, Dracula, Nord
+  and GitHub — each with a light face and a dark one, so ten palettes in all. A theme
+  now writes the surfaces and the text as well as the accent; the translucent tints
+  derive from `--text` with `color-mix`, which is what keeps ten palettes down to
+  eight declarations of overlay each rather than eighty.
+
+- **Three fonts to pick from.** The bundled Cairo and Inter stay the default; Readex Pro
+  is the alternative, and the third choice hands the interface back to the platform's
+  own font. Choosing one swaps `--sans` and nothing else, so the type ramp holds.
 
 - **A list you can search, and tick more than one of.** `src/renderer/select.js`
   replaces the platform's dropdown across settings. It does single and multiple, shows
   a colour beside an option when there is one, and grows a search box once there are
   eight options or more. The working statuses are a multi-select now instead of a wall
-  of chips, and the theme is a list with colour dots instead of unlabelled swatches.
+  of chips, and the theme is a list of names, each with a two-tone swatch that shows the
+  palette's background against its accent.
 
 - **Every size comes from one place.** A token layer built on Apple's macOS type ramp
   from the Human Interface Guidelines — title2 17 down to footnote 10 — with spacing on
@@ -25,10 +36,10 @@ While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
   writes a pixel value by hand any more. Themes stay colour-only, so the sizes hold
   across all of them.
 
-- **Cairo and Inter ship with the app**, 80KB of variable woff2 between them, so Arabic
-  and Latin read the same on every platform. Apple's SF is deliberately absent: its
-  licence covers Apple platforms only. The CSP gains `font-src 'self'`, without which no
-  font file would have loaded at all.
+- **Cairo, Inter and Readex Pro ship with the app**, 133KB of variable woff2 between
+  them, so Arabic and Latin read the same on every platform. All three are SIL OFL, and
+  Apple's SF is deliberately absent: its licence covers Apple platforms only. The CSP
+  gains `font-src 'self'`, without which no font file would have loaded at all.
 
 ### Changed
 

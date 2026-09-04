@@ -4,7 +4,7 @@ const IDS = [
   'settings', 'snav', 'pconn', 'pnudge', 'pgen', 'pappear', 'tokenlink',
   'ssite', 'semail', 'stoken', 'snote',
   'shotkey', 'saddkey', 'sauto', 'sautotext',
-  'sappearance', 'stheme', 'sscale',
+  'sappearance', 'stheme', 'sfont', 'sscale',
   'snudge', 'snudgeevery', 'snudgeidle', 'snudgestart', 'snudgeend', 'snudgedays',
   'snudgecheck', 'snudgecheckevery', 'snudgeoverdue', 'snudgeoverduedays', 'snudgestatuses',
   'view', 'vtitle', 'vmeta', 'vdesc',

@@ -1,4 +1,4 @@
-// بيمسك المظهر على <html>: data-appearance (dark|light) و data-theme.
+// بيمسك المظهر على <html>: data-appearance (dark|light) و data-theme و data-font.
 // "زي السيستم" بيتحل هنا مش في الـ CSS — كده بلوك الألوان الفاتح متكتب مرة واحدة.
 
 const SYSTEM_LIGHT = window.matchMedia('(prefers-color-scheme: light)');
@@ -7,11 +7,17 @@ const SYSTEM_LIGHT = window.matchMedia('(prefers-color-scheme: light)');
 export const APPEARANCES = ['system', 'light', 'dark'];
 
 export const THEMES = [
-  { value: 'amber', label: 'كهرماني' },
-  { value: 'blue', label: 'أزرق' },
-  { value: 'violet', label: 'بنفسجي' },
-  { value: 'green', label: 'أخضر' },
-  { value: 'rose', label: 'وردي' }
+  { value: 'tokyo', label: 'Tokyo Night' },
+  { value: 'one-dark', label: 'One Dark Pro' },
+  { value: 'dracula', label: 'Dracula' },
+  { value: 'nord', label: 'Nord' },
+  { value: 'github', label: 'GitHub' }
+];
+
+export const FONTS = [
+  { value: 'default', label: 'الافتراضي · Cairo و Inter' },
+  { value: 'readex', label: 'Readex Pro' },
+  { value: 'system', label: 'خط الجهاز' }
 ];
 
 export const SCALES = [
@@ -21,6 +27,9 @@ export const SCALES = [
   { value: 1.3, label: 'أكبر · ١٣٠٪' }
 ];
 
+export const DEFAULT_THEME = 'tokyo';
+export const DEFAULT_FONT = 'default';
+
 let preference = 'system';
 
 function resolve() {
@@ -28,19 +37,36 @@ function resolve() {
   return SYSTEM_LIGHT.matches ? 'light' : 'dark';
 }
 
+function pick(options, next, fallback) {
+  return options.some((option) => option.value === next) ? next : fallback;
+}
+
 export function applyAppearance(next) {
   preference = APPEARANCES.includes(next) ? next : 'system';
   document.documentElement.dataset.appearance = resolve();
+  return preference;
 }
 
 export function applyTheme(next) {
-  const known = THEMES.some((option) => option.value === next);
-  document.documentElement.dataset.theme = known ? next : 'amber';
+  const chosen = pick(THEMES, next, DEFAULT_THEME);
+  document.documentElement.dataset.theme = chosen;
+  return chosen;
 }
 
+export function applyFont(next) {
+  const chosen = pick(FONTS, next, DEFAULT_FONT);
+  document.documentElement.dataset.font = chosen;
+  return chosen;
+}
+
+// بترجّع اللي اتطبّق فعلاً مش اللي اتخزّن — الإعدادات القديمة ممكن يكون فيها
+// ثيم اتشال، وساعتها القايمة لازم تورّي البديل اللي بنعرضه مش قيمة مش موجودة.
 export function applyPreferences(preferences) {
-  applyAppearance(preferences.appearance);
-  applyTheme(preferences.theme);
+  return {
+    appearance: applyAppearance(preferences.appearance),
+    theme: applyTheme(preferences.theme),
+    font: applyFont(preferences.font)
+  };
 }
 
 SYSTEM_LIGHT.addEventListener('change', () => {
