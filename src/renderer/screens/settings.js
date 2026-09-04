@@ -10,6 +10,7 @@ const TABS = ['conn', 'nudge', 'gen', 'appear'];
 const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen', appear: 'pappear' };
 const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
 const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
+const DAY_NAMES = ['الأحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'];
 const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
 const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
 const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
@@ -102,7 +103,8 @@ function paintDays(days) {
   elements.snudgedays.innerHTML = DAY_LETTERS.map((letter, index) => {
     const on = days.includes(index) ? ' checked' : '';
     return (
-      `<label class="sday"><input type="checkbox" value="${index}"${on} />` +
+      `<label class="sday" title="${DAY_NAMES[index]}">` +
+      `<input type="checkbox" value="${index}"${on} aria-label="${DAY_NAMES[index]}" />` +
       `<span>${letter}</span></label>`
     );
   }).join('');
