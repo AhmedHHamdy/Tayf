@@ -3,6 +3,66 @@
 Notable changes to Tayf. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 While Tayf is on 0.x, a minor bump is a feature and a patch is a fix.
 
+## [Unreleased]
+
+### Added
+
+- **The overlay's look is yours to set.** A fourth settings tab, المظهر (Ctrl+4).
+  Light or dark can be pinned or left to follow the system; there are five accent
+  themes; and the whole overlay scales from 90% to 130% for anyone who finds it small.
+  "Follow the system" is settled in the renderer rather than in a media query, so the
+  light palette is written once instead of twice.
+
+- **A list you can search, and tick more than one of.** `src/renderer/select.js`
+  replaces the platform's dropdown across settings. It does single and multiple, shows
+  a colour beside an option when there is one, and grows a search box once there are
+  eight options or more. The working statuses are a multi-select now instead of a wall
+  of chips, and the theme is a list with colour dots instead of unlabelled swatches.
+
+- **Every size comes from one place.** A token layer built on Apple's macOS type ramp
+  from the Human Interface Guidelines — title2 17 down to footnote 10 — with spacing on
+  the 4pt grid. Twelve font sizes became six, nine corner radii became five, and no rule
+  writes a pixel value by hand any more. Themes stay colour-only, so the sizes hold
+  across all of them.
+
+- **Cairo and Inter ship with the app**, 80KB of variable woff2 between them, so Arabic
+  and Latin read the same on every platform. Apple's SF is deliberately absent: its
+  licence covers Apple platforms only. The CSP gains `font-src 'self'`, without which no
+  font file would have loaded at all.
+
+### Changed
+
+- **Light or dark is three buttons, not a dropdown** — screen, sun, moon — so the
+  choices are visible without opening anything. Each is a real radio inside its label,
+  so arrow keys and focus come from the browser.
+
+- **The nudge and auto-start checkboxes are switches.** The inputs are still there,
+  hidden inside the label, so every listener and `.checked` read is untouched.
+
+- **The sidebar icons are redrawn** on a 24px grid with an even 2px stroke. They were on
+  a 16px grid at 1.4px, which is what made them look soft.
+
+### Fixed
+
+- **The filters say what their shortcut is.** They already answered to Alt+1 through
+  Alt+4 and nothing anywhere said so, which is the same as not having it. Each chip
+  prints its own key now, the way the quick-date chips in the compose form always have.
+
+- **Tab reaches the work days.** They were spans with a click handler, so the keyboard
+  went straight past them. Each day is a real checkbox inside its label now, and carries
+  its full name as a tooltip so a single letter is not the only clue.
+
+- **Focus survives a save.** Ticking a day repainted every setting, rebuilding all seven
+  days from scratch and dropping focus to the body mid-keystroke — with a keyboard the
+  row was unusable after the first tick. The same fault closed the multi-select after
+  every tick and destroyed the search box under the cursor. Both now build once and
+  update in place.
+
+- **A long answer no longer crushes the label beside it.** Several statuses stretched the
+  control past its 260px basis and squeezed the label column until it wrapped one word
+  per line. A flex item's default `min-width: auto` refuses to go below its content;
+  `min-width: 0` lets the declared width hold.
+
 ## [0.7.0] - 2026-09-03
 
 ### Added

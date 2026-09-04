@@ -10,10 +10,15 @@ class FakeWebContents extends EventEmitter {
   constructor() {
     super();
     this.messages = [];
+    this.zoomFactor = 1;
   }
 
   send(channel, payload) {
     this.messages.push({ channel, payload });
+  }
+
+  setZoomFactor(factor) {
+    this.zoomFactor = factor;
   }
 }
 
@@ -39,7 +44,7 @@ class FakeBrowserWindow extends EventEmitter {
   hide() { this.visible = false; }
 }
 
-function harness() {
+function harness({ zoom } = {}) {
   FakeBrowserWindow.instances = [];
   const boundsCalls = [];
   const platform = {
@@ -56,6 +61,7 @@ function harness() {
   };
   const overlay = new OverlayWindow({
     onHidden: () => {},
+    zoom,
     BrowserWindowClass: FakeBrowserWindow,
     display,
     platformApi: platform
@@ -92,6 +98,30 @@ test('a recreated window receives its requested screen after loading', () => {
   assert.equal(second.webContents.messages.length, 1);
   assert.equal(second.webContents.messages[0].channel, 'overlay:shown');
   assert.equal(second.webContents.messages[0].payload.screen, 'compose');
+});
+
+test('the chosen size survives the window being rebuilt', () => {
+  const { overlay } = harness({ zoom: 1.15 });
+  const first = overlay.create();
+  first.webContents.emit('did-finish-load');
+  assert.equal(first.webContents.zoomFactor, 1.15);
+
+  first.destroyed = true;
+  overlay.show({ state: {}, screen: 'list' });
+  const second = FakeBrowserWindow.instances[1];
+  second.webContents.emit('did-finish-load');
+
+  assert.equal(second.webContents.zoomFactor, 1.15);
+});
+
+test('a new size reaches the window that is already open', () => {
+  const { overlay } = harness();
+  const window = overlay.create();
+  window.webContents.emit('did-finish-load');
+
+  overlay.setZoom(1.3);
+
+  assert.equal(window.webContents.zoomFactor, 1.3);
 });
 
 test('a stale closed event cannot clear a replacement window', () => {

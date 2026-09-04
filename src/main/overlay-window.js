@@ -10,11 +10,13 @@ const PRELOAD = path.join(__dirname, '..', 'preload.js');
 class OverlayWindow {
   constructor({
     onHidden,
+    zoom,
     BrowserWindowClass = BrowserWindow,
     display = screen,
     platformApi = platform
   }) {
     this.onHidden = onHidden;
+    this.zoom = zoom || 1;
     this.BrowserWindowClass = BrowserWindowClass;
     this.display = display;
     this.platform = platformApi;
@@ -65,6 +67,8 @@ class OverlayWindow {
     window.webContents.on('did-finish-load', () => {
       if (this.window !== window || !this.isAlive(window)) return;
       this.ready = true;
+      // الزووم بيتصفّر مع كل تحميل، والشباك ممكن يتبني تاني، فبنرجّعه هنا.
+      this.applyZoom();
       if (!this.pendingShow) return;
 
       const payload = this.pendingShow;
@@ -75,6 +79,16 @@ class OverlayWindow {
     this.platform.attachOverlay(window);
 
     return window;
+  }
+
+  setZoom(factor) {
+    this.zoom = factor || 1;
+    this.applyZoom();
+  }
+
+  applyZoom() {
+    if (!this.isAlive()) return;
+    this.window.webContents.setZoomFactor(this.zoom);
   }
 
   send(channel, payload) {

@@ -1,21 +1,21 @@
 import elements from '../elements.js';
 import { state } from '../state.js';
 import { showLayout, paintBanners, setContext } from '../chrome.js';
-import { escapeHtml } from '../format.js';
 import { backToTaskList } from './task-list.js';
+import { APPEARANCES, THEMES, SCALES, applyPreferences } from '../appearance.js';
+import { createSelect } from '../select.js';
 
 const CLOSE_DELAY_MS = 900;
-const TABS = ['conn', 'nudge', 'gen'];
-const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen' };
+const TABS = ['conn', 'nudge', 'gen', 'appear'];
+const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen', appear: 'pappear' };
 const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
 const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
+const DAY_NAMES = ['الأحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'];
 const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
 const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
 const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
 const OVERDUE_CHOICES = [1, 2, 3, 5, 7];
 const IN_PROGRESS = 'indeterminate';
-
-let boardStatuses = [];
 
 let saving = false;
 let activeTab = 'conn';
@@ -25,76 +25,133 @@ function setNote(text, className) {
   elements.snote.className = className || '';
 }
 
-function fillChoices(select, choices, current) {
-  select.innerHTML = (choices || [])
-    .map((choice) => {
-      const selected = choice.accelerator === current ? ' selected' : '';
-      return `<option value="${escapeHtml(choice.accelerator)}"${selected}>${escapeHtml(choice.label)}</option>`;
-    })
-    .join('');
+// الاختيارات كلها بتوصل للقايمة على شكل { id, label } والـ id نص دايماً،
+// فالأرقام بتترجع لأرقام عند الحفظ.
+const asHotkeys = (choices) =>
+  (choices || []).map((choice) => ({ id: choice.accelerator, label: choice.label }));
+
+const asNumbers = (values, unit) =>
+  values.map((value) => ({ id: String(value), label: `${value} ${unit}` }));
+
+const countOfStatuses = (count) => (count > 10 ? `${count} حالة` : `${count} حالات`);
+
+const selects = {
+  hotkey: createSelect('shotkey', {
+    onChange: (value) => savePreference({ toggleHotkey: value })
+  }),
+  addKey: createSelect('saddkey', {
+    onChange: (value) => savePreference({ composeHotkey: value })
+  }),
+  theme: createSelect('stheme', {
+    onChange: (value) => savePreference({ theme: value })
+  }),
+  scale: createSelect('sscale', {
+    onChange: (value) => savePreference({ uiScale: Number(value) })
+  }),
+  every: createSelect('snudgeevery', {
+    onChange: (value) => saveNudge({ everyMinutes: Number(value) })
+  }),
+  idle: createSelect('snudgeidle', {
+    onChange: (value) => saveNudge({ idleMinutes: Number(value) })
+  }),
+  checkEvery: createSelect('snudgecheckevery', {
+    onChange: (value) => saveNudge({ checkMinutes: Number(value) })
+  }),
+  overdueDays: createSelect('snudgeoverduedays', {
+    onChange: (value) => saveNudge({ overdueDays: Number(value) })
+  }),
+  statuses: createSelect('snudgestatuses', {
+    multiple: true,
+    searchable: true,
+    emptyLabel: 'مفيش حالات لسه',
+    // أسامي الحالات إنجليزي جوه واجهة عربية — تلاتة منهم ورا بعض بيبقوا
+    // مقروئين بالعافية، فبنعد بدل ما نسرد.
+    summary: (names) => (names.length > 2 ? countOfStatuses(names.length) : names.join('، ')),
+    onChange: (next) => {
+      if (!next.length) {
+        setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
+        return false;
+      }
+      saveNudge({ workingStatuses: next });
+      return true;
+    }
+  })
+};
+
+function paintAppearance(current) {
+  const chosen = APPEARANCES.includes(current) ? current : 'system';
+  elements.sappearance.querySelectorAll('input').forEach((input) => {
+    input.checked = input.value === chosen;
+  });
 }
 
-function fillNumbers(select, values, current, unit) {
-  select.innerHTML = values
-    .map((value) => {
-      const selected = value === current ? ' selected' : '';
-      return `<option value="${value}"${selected}>${value} ${unit}</option>`;
-    })
-    .join('');
-}
-
+// مفيش اختيار محفوظ يعني كل الحالات محسوبة — نفس اللي كان بيعمله الشكل القديم.
 function paintStatuses(statuses, working) {
-  const candidates = (statuses || []).filter((status) => status.category === IN_PROGRESS);
+  const names = (statuses || [])
+    .filter((status) => status.category === IN_PROGRESS)
+    .map((status) => status.name);
+  const chosen = Array.isArray(working) && working.length ? working : names;
 
-  if (!candidates.length) {
-    elements.snudgestatuses.innerHTML =
-      '<span class="sstatnote">مفيش حالات نعرضها — جرّب بعد ما يحمّل التاسكات.</span>';
-    return;
+  selects.statuses.setOptions(
+    names.map((name) => ({ id: name, label: name })),
+    chosen
+  );
+}
+
+// شيكبوكس حقيقي مخفي جوه كل يوم — Tab بيوصله والمسافة بتعلّمه، من غير كود كيبورد.
+//
+// الأيام بتتبني مرة واحدة وبعد كده بنحدّث الحالة بس. كل حفظ بيعيد الرسم، ولو
+// كنا بنعيد بناء الـ HTML كان اليوم اللي إنت واقف عليه هيتشال من الصفحة
+// والفوكس هيقع على body وإنت لسه بتعلّم.
+function paintDays(days) {
+  if (!elements.snudgedays.children.length) {
+    elements.snudgedays.innerHTML = DAY_LETTERS.map(
+      (letter, index) =>
+        `<label class="sday" title="${DAY_NAMES[index]}">` +
+        `<input type="checkbox" value="${index}" aria-label="${DAY_NAMES[index]}" />` +
+        `<span>${letter}</span></label>`
+    ).join('');
   }
 
-  const chosen = Array.isArray(working) && working.length ? working : null;
-  elements.snudgestatuses.innerHTML = candidates
-    .map((status) => {
-      const on = !chosen || chosen.includes(status.name) ? ' on' : '';
-      return `<span class="sstat${on}" data-s="${escapeHtml(status.name)}">${escapeHtml(status.name)}</span>`;
-    })
-    .join('');
-}
-
-function chosenStatuses() {
-  return [...elements.snudgestatuses.querySelectorAll('.sstat.on')].map((chip) => chip.dataset.s);
-}
-
-function paintDays(days) {
-  elements.snudgedays.innerHTML = DAY_LETTERS.map((letter, index) => {
-    const on = days.includes(index) ? ' on' : '';
-    return `<span class="sday${on}" data-d="${index}">${letter}</span>`;
-  }).join('');
+  elements.snudgedays.querySelectorAll('input').forEach((input) => {
+    input.checked = days.includes(Number(input.value));
+  });
 }
 
 function chosenDays() {
-  return [...elements.snudgedays.querySelectorAll('.sday.on')].map((chip) =>
-    Number(chip.dataset.d)
+  return [...elements.snudgedays.querySelectorAll('input:checked')].map((input) =>
+    Number(input.value)
   );
 }
 
 function paintPreferences(preferences) {
-  fillChoices(elements.shotkey, preferences.toggleChoices, preferences.toggleHotkey);
-  fillChoices(elements.saddkey, preferences.composeChoices, preferences.composeHotkey);
+  selects.hotkey.setOptions(asHotkeys(preferences.toggleChoices), preferences.toggleHotkey);
+  selects.addKey.setOptions(asHotkeys(preferences.composeChoices), preferences.composeHotkey);
   elements.sauto.checked = !!preferences.autoStart;
   elements.sautotext.textContent =
     AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
 
+  paintAppearance(preferences.appearance);
+  selects.theme.setOptions(
+    THEMES.map((theme) => ({ id: theme.value, label: theme.label, dot: theme.value })),
+    preferences.theme || 'amber'
+  );
+  selects.scale.setOptions(
+    SCALES.map((scale) => ({ id: String(scale.value), label: scale.label })),
+    String(preferences.uiScale || 1)
+  );
+  applyPreferences(preferences);
+
   const nudges = preferences.nudges || {};
   elements.snudge.checked = !!nudges.enabled;
-  fillNumbers(elements.snudgeevery, EVERY_CHOICES, nudges.everyMinutes, 'دقيقة');
-  fillNumbers(elements.snudgeidle, IDLE_CHOICES, nudges.idleMinutes, 'دقيقة');
+  selects.every.setOptions(asNumbers(EVERY_CHOICES, 'دقيقة'), String(nudges.everyMinutes));
+  selects.idle.setOptions(asNumbers(IDLE_CHOICES, 'دقيقة'), String(nudges.idleMinutes));
   elements.snudgestart.value = nudges.workStart || '';
   elements.snudgeend.value = nudges.workEnd || '';
   elements.snudgecheck.checked = !!nudges.checkEnabled;
-  fillNumbers(elements.snudgecheckevery, CHECK_CHOICES, nudges.checkMinutes, 'دقيقة');
+  selects.checkEvery.setOptions(asNumbers(CHECK_CHOICES, 'دقيقة'), String(nudges.checkMinutes));
   elements.snudgeoverdue.checked = !!nudges.overdueEnabled;
-  fillNumbers(elements.snudgeoverduedays, OVERDUE_CHOICES, nudges.overdueDays, 'يوم');
+  selects.overdueDays.setOptions(asNumbers(OVERDUE_CHOICES, 'يوم'), String(nudges.overdueDays));
   paintDays(nudges.workDays || []);
 }
 
@@ -124,7 +181,7 @@ export function showTab(name) {
     item.classList.toggle('on', item.dataset.t === name)
   );
 
-  const first = elements[PANES[name]].querySelector('input, select');
+  const first = elements[PANES[name]].querySelector('input, select, .sel-trigger');
   if (first) {
     first.focus();
     if (first.select) first.select();
@@ -185,8 +242,7 @@ export const settingsScreen = {
     paintPreferences(await window.tayf.readPreferences());
 
     const response = await window.tayf.statuses();
-    boardStatuses = response.error ? [] : response.statuses || [];
-    paintStatuses(boardStatuses, response.working);
+    paintStatuses(response.error ? [] : response.statuses, response.working);
     showTab(state.workspace.configured ? activeTab : 'conn');
   },
 
@@ -202,36 +258,21 @@ elements.snav.addEventListener('click', (event) => {
   const item = event.target.closest('.snavitem');
   if (item) showTab(item.dataset.t);
 });
-elements.shotkey.addEventListener('change', () =>
-  savePreference({ toggleHotkey: elements.shotkey.value })
-);
-elements.saddkey.addEventListener('change', () =>
-  savePreference({ composeHotkey: elements.saddkey.value })
-);
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
+elements.sappearance.addEventListener('change', (event) => {
+  if (event.target.checked) savePreference({ appearance: event.target.value });
+});
 
 const saveNudge = (patch) => savePreference({ nudges: patch });
 
 elements.snudge.addEventListener('change', () => saveNudge({ enabled: elements.snudge.checked }));
-elements.snudgeevery.addEventListener('change', () =>
-  saveNudge({ everyMinutes: Number(elements.snudgeevery.value) })
-);
-elements.snudgeidle.addEventListener('change', () =>
-  saveNudge({ idleMinutes: Number(elements.snudgeidle.value) })
-);
 elements.snudgeoverdue.addEventListener('change', () =>
   saveNudge({ overdueEnabled: elements.snudgeoverdue.checked })
 );
-elements.snudgeoverduedays.addEventListener('change', () =>
-  saveNudge({ overdueDays: Number(elements.snudgeoverduedays.value) })
-);
 elements.snudgecheck.addEventListener('change', () =>
   saveNudge({ checkEnabled: elements.snudgecheck.checked })
-);
-elements.snudgecheckevery.addEventListener('change', () =>
-  saveNudge({ checkMinutes: Number(elements.snudgecheckevery.value) })
 );
 elements.snudgestart.addEventListener('change', () => {
   if (elements.snudgestart.value) saveNudge({ workStart: elements.snudgestart.value });
@@ -239,30 +280,6 @@ elements.snudgestart.addEventListener('change', () => {
 elements.snudgeend.addEventListener('change', () => {
   if (elements.snudgeend.value) saveNudge({ workEnd: elements.snudgeend.value });
 });
-elements.snudgestatuses.addEventListener('click', async (event) => {
-  const chip = event.target.closest('.sstat');
-  if (!chip) return;
-
-  const wasOn = chip.classList.contains('on');
-  if (wasOn && chosenStatuses().length === 1) {
-    setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
-    return;
-  }
-
-  chip.classList.toggle('on');
-  await saveNudge({ workingStatuses: chosenStatuses() });
-  paintStatuses(boardStatuses, chosenStatuses());
-});
-
-elements.snudgedays.addEventListener('click', (event) => {
-  const chip = event.target.closest('.sday');
-  if (!chip) return;
-
-  const day = Number(chip.dataset.d);
-  const days = chosenDays();
-  const next = days.includes(day)
-    ? days.filter((chosen) => chosen !== day)
-    : [...days, day].sort((first, second) => first - second);
-
-  saveNudge({ workDays: next });
-});
+elements.snudgedays.addEventListener('change', () =>
+  saveNudge({ workDays: chosenDays() })
+);
