@@ -1,9 +1,9 @@
 import elements from '../elements.js';
 import { state } from '../state.js';
 import { showLayout, paintBanners, setContext } from '../chrome.js';
-import { escapeHtml } from '../format.js';
 import { backToTaskList } from './task-list.js';
 import { APPEARANCES, THEMES, SCALES, applyPreferences } from '../appearance.js';
+import { createSelect } from '../select.js';
 
 const CLOSE_DELAY_MS = 900;
 const TABS = ['conn', 'nudge', 'gen', 'appear'];
@@ -16,8 +16,6 @@ const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
 const OVERDUE_CHOICES = [1, 2, 3, 5, 7];
 const IN_PROGRESS = 'indeterminate';
 
-let boardStatuses = [];
-
 let saving = false;
 let activeTab = 'conn';
 
@@ -26,33 +24,53 @@ function setNote(text, className) {
   elements.snote.className = className || '';
 }
 
-function fillChoices(select, choices, current) {
-  select.innerHTML = (choices || [])
-    .map((choice) => {
-      const selected = choice.accelerator === current ? ' selected' : '';
-      return `<option value="${escapeHtml(choice.accelerator)}"${selected}>${escapeHtml(choice.label)}</option>`;
-    })
-    .join('');
-}
+// الاختيارات كلها بتوصل للقايمة على شكل { id, label } والـ id نص دايماً،
+// فالأرقام بتترجع لأرقام عند الحفظ.
+const asHotkeys = (choices) =>
+  (choices || []).map((choice) => ({ id: choice.accelerator, label: choice.label }));
 
-function fillNumbers(select, values, current, unit) {
-  select.innerHTML = values
-    .map((value) => {
-      const selected = value === current ? ' selected' : '';
-      return `<option value="${value}"${selected}>${value} ${unit}</option>`;
-    })
-    .join('');
-}
+const asNumbers = (values, unit) =>
+  values.map((value) => ({ id: String(value), label: `${value} ${unit}` }));
 
-function fillOptions(select, options, current) {
-  select.innerHTML = options
-    .map((option) => {
-      const selected = option.value === current ? ' selected' : '';
-      const value = escapeHtml(String(option.value));
-      return `<option value="${value}"${selected}>${escapeHtml(option.label)}</option>`;
-    })
-    .join('');
-}
+const selects = {
+  hotkey: createSelect('shotkey', {
+    onChange: (value) => savePreference({ toggleHotkey: value })
+  }),
+  addKey: createSelect('saddkey', {
+    onChange: (value) => savePreference({ composeHotkey: value })
+  }),
+  theme: createSelect('stheme', {
+    onChange: (value) => savePreference({ theme: value })
+  }),
+  scale: createSelect('sscale', {
+    onChange: (value) => savePreference({ uiScale: Number(value) })
+  }),
+  every: createSelect('snudgeevery', {
+    onChange: (value) => saveNudge({ everyMinutes: Number(value) })
+  }),
+  idle: createSelect('snudgeidle', {
+    onChange: (value) => saveNudge({ idleMinutes: Number(value) })
+  }),
+  checkEvery: createSelect('snudgecheckevery', {
+    onChange: (value) => saveNudge({ checkMinutes: Number(value) })
+  }),
+  overdueDays: createSelect('snudgeoverduedays', {
+    onChange: (value) => saveNudge({ overdueDays: Number(value) })
+  }),
+  statuses: createSelect('snudgestatuses', {
+    multiple: true,
+    searchable: true,
+    emptyLabel: 'مفيش حالات لسه',
+    onChange: (next) => {
+      if (!next.length) {
+        setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
+        return false;
+      }
+      saveNudge({ workingStatuses: next });
+      return true;
+    }
+  })
+};
 
 function paintAppearance(current) {
   const chosen = APPEARANCES.includes(current) ? current : 'system';
@@ -61,34 +79,17 @@ function paintAppearance(current) {
   });
 }
 
-function paintThemes(current) {
-  elements.stheme.innerHTML = THEMES.map((theme) => {
-    const on = theme.value === current ? ' on' : '';
-    const name = escapeHtml(theme.label);
-    return `<span class="swatch${on}" data-th="${escapeHtml(theme.value)}" title="${name}"></span>`;
-  }).join('');
-}
-
+// مفيش اختيار محفوظ يعني كل الحالات محسوبة — نفس اللي كان بيعمله الشكل القديم.
 function paintStatuses(statuses, working) {
-  const candidates = (statuses || []).filter((status) => status.category === IN_PROGRESS);
+  const names = (statuses || [])
+    .filter((status) => status.category === IN_PROGRESS)
+    .map((status) => status.name);
+  const chosen = Array.isArray(working) && working.length ? working : names;
 
-  if (!candidates.length) {
-    elements.snudgestatuses.innerHTML =
-      '<span class="sstatnote">مفيش حالات نعرضها — جرّب بعد ما يحمّل التاسكات.</span>';
-    return;
-  }
-
-  const chosen = Array.isArray(working) && working.length ? working : null;
-  elements.snudgestatuses.innerHTML = candidates
-    .map((status) => {
-      const on = !chosen || chosen.includes(status.name) ? ' on' : '';
-      return `<span class="sstat${on}" data-s="${escapeHtml(status.name)}">${escapeHtml(status.name)}</span>`;
-    })
-    .join('');
-}
-
-function chosenStatuses() {
-  return [...elements.snudgestatuses.querySelectorAll('.sstat.on')].map((chip) => chip.dataset.s);
+  selects.statuses.setOptions(
+    names.map((name) => ({ id: name, label: name })),
+    chosen
+  );
 }
 
 function paintDays(days) {
@@ -105,27 +106,33 @@ function chosenDays() {
 }
 
 function paintPreferences(preferences) {
-  fillChoices(elements.shotkey, preferences.toggleChoices, preferences.toggleHotkey);
-  fillChoices(elements.saddkey, preferences.composeChoices, preferences.composeHotkey);
+  selects.hotkey.setOptions(asHotkeys(preferences.toggleChoices), preferences.toggleHotkey);
+  selects.addKey.setOptions(asHotkeys(preferences.composeChoices), preferences.composeHotkey);
   elements.sauto.checked = !!preferences.autoStart;
   elements.sautotext.textContent =
     AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
 
   paintAppearance(preferences.appearance);
-  fillOptions(elements.sscale, SCALES, preferences.uiScale || 1);
-  paintThemes(preferences.theme || 'amber');
+  selects.theme.setOptions(
+    THEMES.map((theme) => ({ id: theme.value, label: theme.label, dot: theme.value })),
+    preferences.theme || 'amber'
+  );
+  selects.scale.setOptions(
+    SCALES.map((scale) => ({ id: String(scale.value), label: scale.label })),
+    String(preferences.uiScale || 1)
+  );
   applyPreferences(preferences);
 
   const nudges = preferences.nudges || {};
   elements.snudge.checked = !!nudges.enabled;
-  fillNumbers(elements.snudgeevery, EVERY_CHOICES, nudges.everyMinutes, 'دقيقة');
-  fillNumbers(elements.snudgeidle, IDLE_CHOICES, nudges.idleMinutes, 'دقيقة');
+  selects.every.setOptions(asNumbers(EVERY_CHOICES, 'دقيقة'), String(nudges.everyMinutes));
+  selects.idle.setOptions(asNumbers(IDLE_CHOICES, 'دقيقة'), String(nudges.idleMinutes));
   elements.snudgestart.value = nudges.workStart || '';
   elements.snudgeend.value = nudges.workEnd || '';
   elements.snudgecheck.checked = !!nudges.checkEnabled;
-  fillNumbers(elements.snudgecheckevery, CHECK_CHOICES, nudges.checkMinutes, 'دقيقة');
+  selects.checkEvery.setOptions(asNumbers(CHECK_CHOICES, 'دقيقة'), String(nudges.checkMinutes));
   elements.snudgeoverdue.checked = !!nudges.overdueEnabled;
-  fillNumbers(elements.snudgeoverduedays, OVERDUE_CHOICES, nudges.overdueDays, 'يوم');
+  selects.overdueDays.setOptions(asNumbers(OVERDUE_CHOICES, 'يوم'), String(nudges.overdueDays));
   paintDays(nudges.workDays || []);
 }
 
@@ -155,7 +162,7 @@ export function showTab(name) {
     item.classList.toggle('on', item.dataset.t === name)
   );
 
-  const first = elements[PANES[name]].querySelector('input, select');
+  const first = elements[PANES[name]].querySelector('input, select, .sel-trigger');
   if (first) {
     first.focus();
     if (first.select) first.select();
@@ -216,8 +223,7 @@ export const settingsScreen = {
     paintPreferences(await window.tayf.readPreferences());
 
     const response = await window.tayf.statuses();
-    boardStatuses = response.error ? [] : response.statuses || [];
-    paintStatuses(boardStatuses, response.working);
+    paintStatuses(response.error ? [] : response.statuses, response.working);
     showTab(state.workspace.configured ? activeTab : 'conn');
   },
 
@@ -233,46 +239,21 @@ elements.snav.addEventListener('click', (event) => {
   const item = event.target.closest('.snavitem');
   if (item) showTab(item.dataset.t);
 });
-elements.shotkey.addEventListener('change', () =>
-  savePreference({ toggleHotkey: elements.shotkey.value })
-);
-elements.saddkey.addEventListener('change', () =>
-  savePreference({ composeHotkey: elements.saddkey.value })
-);
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
 elements.sappearance.addEventListener('change', (event) => {
   if (event.target.checked) savePreference({ appearance: event.target.value });
 });
-elements.sscale.addEventListener('change', () =>
-  savePreference({ uiScale: Number(elements.sscale.value) })
-);
-elements.stheme.addEventListener('click', (event) => {
-  const swatch = event.target.closest('.swatch');
-  if (swatch) savePreference({ theme: swatch.dataset.th });
-});
 
 const saveNudge = (patch) => savePreference({ nudges: patch });
 
 elements.snudge.addEventListener('change', () => saveNudge({ enabled: elements.snudge.checked }));
-elements.snudgeevery.addEventListener('change', () =>
-  saveNudge({ everyMinutes: Number(elements.snudgeevery.value) })
-);
-elements.snudgeidle.addEventListener('change', () =>
-  saveNudge({ idleMinutes: Number(elements.snudgeidle.value) })
-);
 elements.snudgeoverdue.addEventListener('change', () =>
   saveNudge({ overdueEnabled: elements.snudgeoverdue.checked })
 );
-elements.snudgeoverduedays.addEventListener('change', () =>
-  saveNudge({ overdueDays: Number(elements.snudgeoverduedays.value) })
-);
 elements.snudgecheck.addEventListener('change', () =>
   saveNudge({ checkEnabled: elements.snudgecheck.checked })
-);
-elements.snudgecheckevery.addEventListener('change', () =>
-  saveNudge({ checkMinutes: Number(elements.snudgecheckevery.value) })
 );
 elements.snudgestart.addEventListener('change', () => {
   if (elements.snudgestart.value) saveNudge({ workStart: elements.snudgestart.value });
@@ -280,21 +261,6 @@ elements.snudgestart.addEventListener('change', () => {
 elements.snudgeend.addEventListener('change', () => {
   if (elements.snudgeend.value) saveNudge({ workEnd: elements.snudgeend.value });
 });
-elements.snudgestatuses.addEventListener('click', async (event) => {
-  const chip = event.target.closest('.sstat');
-  if (!chip) return;
-
-  const wasOn = chip.classList.contains('on');
-  if (wasOn && chosenStatuses().length === 1) {
-    setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
-    return;
-  }
-
-  chip.classList.toggle('on');
-  await saveNudge({ workingStatuses: chosenStatuses() });
-  paintStatuses(boardStatuses, chosenStatuses());
-});
-
 elements.snudgedays.addEventListener('click', (event) => {
   const chip = event.target.closest('.sday');
   if (!chip) return;

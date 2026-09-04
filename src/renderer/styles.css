@@ -89,6 +89,13 @@
     --muted:   #9b9da6;
     --dim:     #777b8b;
 
+    /* ألوان الثيمات — النقطة في القايمة ولون التمييز بيقروا من هنا الاتنين */
+    --th-amber:  #f0a83c;
+    --th-blue:   #5b9dd9;
+    --th-violet: #b49bff;
+    --th-green:  #57b98a;
+    --th-rose:   #ff8fa8;
+
     /* خلفية الكنترول المرفوع — الاختيار الشغّال في مجموعة الأزرار */
     --raised: #2b2b34;
 
@@ -149,6 +156,12 @@
     --muted:   #54565e;
     --dim:     #717480;
 
+    --th-amber:  #a3670d;
+    --th-blue:   #1f6bb0;
+    --th-violet: #5a34b8;
+    --th-green:  #2e8359;
+    --th-rose:   #b52a52;
+
     --raised: #ffffff;
     --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2354565e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
 
@@ -177,18 +190,12 @@
     --ty-epic:  #5a34b8;  --ty-epic-bg:  rgba(107,63,212,.12);
   }
 
-  /* ثيمات اللون — الوضع مكتوب في السيليكتور عشان الفاتح والغامق ما يتعارضوش */
-  :root[data-appearance="dark"][data-theme="amber"]  { --accent: #f0a83c; }
-  :root[data-appearance="dark"][data-theme="blue"]   { --accent: #5b9dd9; }
-  :root[data-appearance="dark"][data-theme="violet"] { --accent: #b49bff; }
-  :root[data-appearance="dark"][data-theme="green"]  { --accent: #57b98a; }
-  :root[data-appearance="dark"][data-theme="rose"]   { --accent: #ff8fa8; }
-
-  :root[data-appearance="light"][data-theme="amber"]  { --accent: #a3670d; }
-  :root[data-appearance="light"][data-theme="blue"]   { --accent: #1f6bb0; }
-  :root[data-appearance="light"][data-theme="violet"] { --accent: #5a34b8; }
-  :root[data-appearance="light"][data-theme="green"]  { --accent: #2e8359; }
-  :root[data-appearance="light"][data-theme="rose"]   { --accent: #b52a52; }
+  /* لون التمييز بيتاخد من لون الثيم — والوضع بيبدّل السلّم كله فوق */
+  :root[data-theme="amber"]  { --accent: var(--th-amber); }
+  :root[data-theme="blue"]   { --accent: var(--th-blue); }
+  :root[data-theme="violet"] { --accent: var(--th-violet); }
+  :root[data-theme="green"]  { --accent: var(--th-green); }
+  :root[data-theme="rose"]   { --accent: var(--th-rose); }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: transparent; overflow: hidden; }
@@ -391,8 +398,8 @@
   .sctl input::placeholder { color: var(--dim); }
   .sctl select option { background: var(--elev-2); color: var(--text); }
 
-  /* السيليكت — بنشيل شكل النظام ونحط سهمنا. الواجهة RTL فالسهم على الشمال. */
-  .sctl select, .cgrid select {
+  /* السيليكت الأصلي — لسه مستعمل في فورم الإنشاء والإقفال */
+  .cgrid select {
     appearance: none;
     background-image: var(--chevron);
     background-repeat: no-repeat;
@@ -401,7 +408,68 @@
     padding-inline-end: var(--sp-8);
     cursor: pointer;
   }
-  .sctl select:hover, .cgrid select:hover { background-color: var(--fill-2); }
+  .cgrid select:hover { background-color: var(--fill-2); }
+
+  /* ── قايمة الاختيار ────────────────────────────────────────────────────
+     الزرار جوه الصف، واللوحة معلّقة على <body> عشان متتقصّش من السكرول. */
+  .sel { min-width: 0; }
+  .sel-trigger {
+    display: flex; align-items: center; gap: var(--sp-4);
+    width: 100%; padding: var(--sp-4) var(--sp-5);
+    background-color: var(--fill);
+    border: 1px solid transparent; border-radius: var(--r-3);
+    color: var(--text); font-size: var(--fs-body); font-family: var(--sans);
+    text-align: start; cursor: pointer; outline: none;
+  }
+  .sel-trigger:hover { background-color: var(--fill-2); }
+  .sel-trigger:focus-visible { border-color: var(--accent-line); background-color: var(--accent-soft); }
+  .sel-trigger[aria-expanded="true"] { border-color: var(--accent-line); background-color: var(--accent-soft); }
+  .sel-value { display: flex; align-items: center; gap: var(--sp-4); flex: 1; min-width: 0; }
+  .sel-chev { width: 14px; height: 14px; flex: none; color: var(--muted); }
+
+  .sel-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sel-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--dot); }
+
+  .sel-panel {
+    position: fixed; z-index: 30;
+    max-width: 320px; padding: var(--sp-2);
+    background: var(--elev); border: 1px solid var(--line); border-radius: var(--r-4);
+    box-shadow: var(--shadow-2);
+    animation: pop .1s ease-out;
+  }
+  .sel-search { padding: var(--sp-1) var(--sp-1) var(--sp-3); }
+  .sel-search input {
+    width: 100%; padding: var(--sp-3) var(--sp-4);
+    background-color: var(--fill); border: 1px solid var(--line); border-radius: var(--r-3);
+    color: var(--text); font-size: var(--fs-callout); font-family: var(--sans); outline: none;
+  }
+  .sel-search input:focus { border-color: var(--accent-line); }
+  .sel-search input::placeholder { color: var(--dim); }
+
+  .sel-list { max-height: 260px; overflow-y: auto; }
+  .sel-list::-webkit-scrollbar { width: var(--sp-4); }
+  .sel-list::-webkit-scrollbar-thumb { background: var(--scroll-2); border-radius: var(--r-2); }
+
+  .sel-opt {
+    display: flex; align-items: center; gap: var(--sp-4);
+    padding: var(--sp-4) var(--sp-5); border-radius: var(--r-3);
+    font-size: var(--fs-body); color: var(--text-2); cursor: pointer;
+  }
+  .sel-opt.on { background-color: var(--fill-2); color: var(--text); }
+  .sel-opt .sel-text { flex: 1; }
+  .sel-check {
+    width: 14px; height: 14px; flex: none;
+    color: var(--accent); opacity: 0;
+  }
+  .sel-opt.picked .sel-check { opacity: 1; }
+  .sel-empty { padding: var(--sp-5); font-size: var(--fs-callout); color: var(--dim); }
+
+  /* ألوان الثيمات — مصدر واحد للنقطة وللون التمييز مع بعض */
+  .sel-dot[data-dot="amber"]  { --dot: var(--th-amber); }
+  .sel-dot[data-dot="blue"]   { --dot: var(--th-blue); }
+  .sel-dot[data-dot="violet"] { --dot: var(--th-violet); }
+  .sel-dot[data-dot="green"]  { --dot: var(--th-green); }
+  .sel-dot[data-dot="rose"]   { --dot: var(--th-rose); }
 
   /* مجموعة أزرار — بديل السيليكت لما الاختيارات قليلة وليها أيقونات.
      راديو حقيقي مخفي جوه كل زر، فالتنقل بالأسهم والـ change بييجوا من المتصفح. */
@@ -454,21 +522,6 @@
   .sw input:checked + span::after { background: var(--accent); transform: translateX(-16px); }
   .sw input:focus-visible + span { outline: 2px solid var(--accent-line); outline-offset: var(--sp-1); }
 
-  /* عيّنات ألوان الثيم */
-  .sthemes { display: flex; gap: var(--sp-4); justify-content: flex-start; }
-  .swatch {
-    display: flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: var(--r-3);
-    background: var(--fill-3); border: 1px solid var(--line); cursor: pointer;
-  }
-  .swatch::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--sw); }
-  .swatch:hover { border-color: var(--sw); }
-  .swatch.on { border-color: var(--sw); box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--sw); }
-  .swatch[data-th="amber"]  { --sw: #f0a83c; }
-  .swatch[data-th="blue"]   { --sw: #5b9dd9; }
-  .swatch[data-th="violet"] { --sw: #b49bff; }
-  .swatch[data-th="green"]  { --sw: #57b98a; }
-  .swatch[data-th="rose"]   { --sw: #ff8fa8; }
   .stimes { display: flex; gap: var(--sp-4); }
   .stimes input { text-align: center; }
   .sdays { display: flex; gap: var(--sp-3); justify-content: flex-start; }
