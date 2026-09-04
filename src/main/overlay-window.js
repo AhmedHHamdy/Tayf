@@ -8,14 +8,31 @@ const RENDERER_ENTRY = path.join(__dirname, '..', 'renderer', 'index.html');
 const PRELOAD = path.join(__dirname, '..', 'preload.js');
 
 class OverlayWindow {
-  constructor({ onHidden, zoom }) {
+  constructor({
+    onHidden,
+    zoom,
+    BrowserWindowClass = BrowserWindow,
+    display = screen,
+    platformApi = platform
+  }) {
     this.onHidden = onHidden;
     this.zoom = zoom || 1;
+    this.BrowserWindowClass = BrowserWindowClass;
+    this.display = display;
+    this.platform = platformApi;
     this.window = null;
+    this.ready = false;
+    this.pendingShow = null;
+  }
+
+  isAlive(window = this.window) {
+    return !!window && !window.isDestroyed();
   }
 
   create() {
-    this.window = new BrowserWindow({
+    if (this.isAlive()) return this.window;
+
+    const window = new this.BrowserWindowClass({
       show: false,
       frame: false,
       transparent: true,
@@ -31,17 +48,37 @@ class OverlayWindow {
         contextIsolation: true,
         nodeIntegration: false
       },
-      ...platform.windowOptions()
+      ...this.platform.windowOptions()
     });
+    this.window = window;
+    this.ready = false;
 
-    this.window.setAlwaysOnTop(true, 'screen-saver');
-    this.window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-    this.window.webContents.on('did-finish-load', () => this.applyZoom());
-    this.window.loadFile(RENDERER_ENTRY);
-    this.window.on('blur', () => this.hide());
-    platform.attachOverlay(this.window);
+    window.setAlwaysOnTop(true, 'screen-saver');
+    window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    window.on('blur', () => {
+      if (this.window === window) this.hide();
+    });
+    window.on('closed', () => {
+      if (this.window !== window) return;
+      this.window = null;
+      this.ready = false;
+      this.pendingShow = null;
+    });
+    window.webContents.on('did-finish-load', () => {
+      if (this.window !== window || !this.isAlive(window)) return;
+      this.ready = true;
+      // الزووم بيتصفّر مع كل تحميل، والشباك ممكن يتبني تاني، فبنرجّعه هنا.
+      this.applyZoom();
+      if (!this.pendingShow) return;
 
-    return this.window;
+      const payload = this.pendingShow;
+      this.pendingShow = null;
+      this.send('overlay:shown', payload);
+    });
+    window.loadFile(RENDERER_ENTRY);
+    this.platform.attachOverlay(window);
+
+    return window;
   }
 
   setZoom(factor) {
@@ -50,39 +87,42 @@ class OverlayWindow {
   }
 
   applyZoom() {
-    if (!this.window || this.window.isDestroyed()) return;
+    if (!this.isAlive()) return;
     this.window.webContents.setZoomFactor(this.zoom);
   }
 
   send(channel, payload) {
-    if (this.window && !this.window.isDestroyed()) {
+    if (this.isAlive()) {
       this.window.webContents.send(channel, payload);
     }
   }
 
   isVisible() {
-    return !!this.window && this.window.isVisible();
+    return this.isAlive() && this.window.isVisible();
   }
 
   show({ state, screen: requestedScreen }) {
-    if (!this.window) return;
+    const window = this.isAlive() ? this.window : this.create();
 
-    platform.rememberFocusedWindow();
-    platform.focusOverlayApp();
+    this.platform.rememberFocusedWindow();
+    this.platform.focusOverlayApp();
 
-    const cursor = screen.getCursorScreenPoint();
-    platform.setOverlayBounds(this.window, screen.getDisplayNearestPoint(cursor).bounds);
+    const cursor = this.display.getCursorScreenPoint();
+    this.platform.setOverlayBounds(window, this.display.getDisplayNearestPoint(cursor).bounds);
 
     const openedAt = Date.now();
-    this.window.show();
-    this.window.focus();
-    this.send('overlay:shown', { openedAt, state, screen: requestedScreen });
+    window.show();
+    window.focus();
+
+    const payload = { openedAt, state, screen: requestedScreen };
+    if (this.ready) this.send('overlay:shown', payload);
+    else this.pendingShow = payload;
   }
 
   hide() {
     if (!this.isVisible()) return;
     this.window.hide();
-    platform.restoreFocus();
+    this.platform.restoreFocus();
     if (this.onHidden) this.onHidden();
   }
 }

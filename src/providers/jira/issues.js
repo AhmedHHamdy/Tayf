@@ -96,7 +96,11 @@ async function createItem(client, draft) {
   if (draft.due) fields.duedate = draft.due;
   if (draft.estimate) fields.timetracking = { originalEstimate: draft.estimate };
 
-  Object.assign(fields, draft.dateFields || {}, draft.optionFields || {});
+  const dateFields = draft.dateFields || {};
+  Object.keys(dateFields).forEach((fieldId) => {
+    if (dateFields[fieldId]) fields[fieldId] = dateFields[fieldId];
+  });
+  Object.assign(fields, draft.optionFields || {});
 
   const created = await client.post('/rest/api/3/issue', { fields });
   return created && created.key;
