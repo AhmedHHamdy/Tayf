@@ -2,7 +2,7 @@ import elements from '../elements.js';
 import { state } from '../state.js';
 import { showLayout, setContext, paintBanners, setFlash, setVisible, setFooterMeta } from '../chrome.js';
 import { escapeHtml } from '../format.js';
-import { parseDueDate, parseEstimate, QUICK_DATES, DATE_WORDS } from '../dates.js';
+import { parseDueDate, parseEstimate, toIsoDate, QUICK_DATES, DATE_WORDS } from '../dates.js';
 import { createCombo } from '../combo.js';
 import {
   createGridRows,
@@ -156,6 +156,11 @@ async function loadCreateFields(passedRequestId) {
   optionEntries = renderOptionRows(optionRows, fields.optionFields, {
     boardFields: context.requirements && context.requirements.fields,
     remembered: fields.lastOptionFields
+  });
+  dateEntries = renderDateRows(dateRows, fields.dateFields, {
+    values: null,
+    defaultToToday: toIsoDate(new Date()),
+    onFeedback: setNote
   });
 
   setRow(elements.cassigneewrap, elements.lblassignee, fields.hasAssignee !== false);
