@@ -527,13 +527,23 @@
   .stimes { display: flex; gap: var(--sp-4); }
   .stimes input { text-align: center; }
   .sdays { display: flex; gap: var(--sp-3); justify-content: flex-start; }
-  .sday {
+  .sday { position: relative; display: inline-flex; flex: none; cursor: pointer; }
+  .sday input {
+    position: absolute; inset: 0; margin: 0; padding: 0;
+    width: 100%; height: 100%; opacity: 0; cursor: pointer;
+  }
+  .sday span {
     font-family: var(--mono); font-size: var(--fs-subheadline); color: var(--muted);
     background: var(--fill-3); border: 1px solid var(--line);
-    border-radius: var(--r-3); width: 30px; padding: var(--sp-3) 0; text-align: center; cursor: pointer;
+    border-radius: var(--r-3); width: 30px; padding: var(--sp-3) 0; text-align: center;
   }
-  .sday:hover { color: var(--text); }
-  .sday.on { background: var(--accent-bg); border-color: var(--accent-line); color: var(--accent); }
+  .sday:hover span { color: var(--text); }
+  .sday input:checked + span {
+    background: var(--accent-bg); border-color: var(--accent-line); color: var(--accent);
+  }
+  .sday input:focus-visible + span {
+    outline: 2px solid var(--accent-line); outline-offset: var(--sp-1);
+  }
   .sstats { display: flex; flex-wrap: wrap; gap: var(--sp-3); justify-content: flex-start; max-width: 260px; }
   .sstat {
     font-family: var(--mono); font-size: var(--fs-subheadline); color: var(--muted);

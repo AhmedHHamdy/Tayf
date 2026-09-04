@@ -97,16 +97,20 @@ function paintStatuses(statuses, working) {
   );
 }
 
+// شيكبوكس حقيقي مخفي جوه كل يوم — Tab بيوصله والمسافة بتعلّمه، من غير كود كيبورد.
 function paintDays(days) {
   elements.snudgedays.innerHTML = DAY_LETTERS.map((letter, index) => {
-    const on = days.includes(index) ? ' on' : '';
-    return `<span class="sday${on}" data-d="${index}">${letter}</span>`;
+    const on = days.includes(index) ? ' checked' : '';
+    return (
+      `<label class="sday"><input type="checkbox" value="${index}"${on} />` +
+      `<span>${letter}</span></label>`
+    );
   }).join('');
 }
 
 function chosenDays() {
-  return [...elements.snudgedays.querySelectorAll('.sday.on')].map((chip) =>
-    Number(chip.dataset.d)
+  return [...elements.snudgedays.querySelectorAll('input:checked')].map((input) =>
+    Number(input.value)
   );
 }
 
@@ -266,15 +270,6 @@ elements.snudgestart.addEventListener('change', () => {
 elements.snudgeend.addEventListener('change', () => {
   if (elements.snudgeend.value) saveNudge({ workEnd: elements.snudgeend.value });
 });
-elements.snudgedays.addEventListener('click', (event) => {
-  const chip = event.target.closest('.sday');
-  if (!chip) return;
-
-  const day = Number(chip.dataset.d);
-  const days = chosenDays();
-  const next = days.includes(day)
-    ? days.filter((chosen) => chosen !== day)
-    : [...days, day].sort((first, second) => first - second);
-
-  saveNudge({ workDays: next });
-});
+elements.snudgedays.addEventListener('change', () =>
+  saveNudge({ workDays: chosenDays() })
+);
