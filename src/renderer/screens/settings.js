@@ -99,15 +99,23 @@ function paintStatuses(statuses, working) {
 }
 
 // شيكبوكس حقيقي مخفي جوه كل يوم — Tab بيوصله والمسافة بتعلّمه، من غير كود كيبورد.
+//
+// الأيام بتتبني مرة واحدة وبعد كده بنحدّث الحالة بس. كل حفظ بيعيد الرسم، ولو
+// كنا بنعيد بناء الـ HTML كان اليوم اللي إنت واقف عليه هيتشال من الصفحة
+// والفوكس هيقع على body وإنت لسه بتعلّم.
 function paintDays(days) {
-  elements.snudgedays.innerHTML = DAY_LETTERS.map((letter, index) => {
-    const on = days.includes(index) ? ' checked' : '';
-    return (
-      `<label class="sday" title="${DAY_NAMES[index]}">` +
-      `<input type="checkbox" value="${index}"${on} aria-label="${DAY_NAMES[index]}" />` +
-      `<span>${letter}</span></label>`
-    );
-  }).join('');
+  if (!elements.snudgedays.children.length) {
+    elements.snudgedays.innerHTML = DAY_LETTERS.map(
+      (letter, index) =>
+        `<label class="sday" title="${DAY_NAMES[index]}">` +
+        `<input type="checkbox" value="${index}" aria-label="${DAY_NAMES[index]}" />` +
+        `<span>${letter}</span></label>`
+    ).join('');
+  }
+
+  elements.snudgedays.querySelectorAll('input').forEach((input) => {
+    input.checked = days.includes(Number(input.value));
+  });
 }
 
 function chosenDays() {
