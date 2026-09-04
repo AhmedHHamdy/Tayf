@@ -91,6 +91,32 @@ the active screen.
 The renderer never sees a Jira URL, a token, or a network call. It only calls
 `window.tayf.*`.
 
+**Shared components.** `select.js` is the list control — single or multiple, with a
+search box that appears on its own once there are eight options. Its panel hangs off
+`<body>` rather than the row, because `#sbody` scrolls and `#panel` hides its overflow;
+anywhere else it would be clipped. `appearance.js` owns the mode and theme on `<html>`.
+
+**Every size comes from a token.** The top of `styles.css` holds the type ramp (macOS's,
+from Apple's Human Interface Guidelines, under Apple's names), spacing on the 4pt grid,
+and five radii. No rule writes a pixel value by hand. A theme sets `--accent` and the
+rest is derived with `color-mix`, so adding one is two lines.
+
+**The CSP is tight, and it shapes how we write.** `style-src 'self'` forbids inline
+styles, so a colour coming from JavaScript is carried on a `data-*` attribute with the
+rule in CSS, never `style=`. (Assigning `el.style.foo` from script is allowed, and that
+is how popover panels are positioned.)
+
+**A repaint must never replace a focused element.** Saving repaints the whole settings
+screen, so any group of controls is built once and only its state synced afterwards.
+`innerHTML` over the control the user is standing on drops focus to the body
+mid-keystroke, and this is a keyboard-first interface.
+
+**Every control has to be reachable by keyboard.** A real checkbox hides inside the
+`<label>` (the switches, the work days), and a real radio does the same (light/dark), so
+movement, space, and `change` come from the browser rather than from code we wrote.
+Anything that cannot work that way carries its shortcut printed on itself — `Alt1` on
+the filters and the quick-date chips.
+
 ## Data flow
 
 ```

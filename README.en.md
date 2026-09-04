@@ -26,13 +26,22 @@ keyboard layout switcher.
 
 **In the list:** `↑` `↓` move · **`→` item actions** (view · edit · change status ·
 open in Jira · copy key) · `Tab` change status · `Enter` view · `Esc` close.
-Filters across the top: all · today · overdue · in progress. Search matches the key,
-title, type, and board name.
+Filters across the top — all · today · overdue · in progress — on `Alt+1` to `Alt+4`.
+Search matches the key, title, type, and board name.
 
 **Adding:** type a title, press `Enter`, done — it reuses your last board and issue
 type. If you want to be specific: board · type · assignee · due date · estimate ·
 description. The due date field understands `today`, `tomorrow`, weekday names,
 `+3`, and plain dates; a bare number in the estimate field means minutes.
+
+## Appearance
+
+Settings → **المظهر** (`Ctrl+4`): pin light or dark, or leave it following the system ·
+five accent themes · and the overlay scales from 90% to 130% if you find it small.
+
+Every size comes from one token layer built on the macOS type ramp in Apple's
+[Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/typography).
+A theme changes colour only, so the rhythm holds whichever one you pick.
 
 ## The interesting problem: one project, several boards
 
@@ -80,6 +89,7 @@ an AppImage.
 |---|---|
 | Stack | Electron · plain JavaScript · no build step |
 | Platforms | Windows · macOS · Linux |
+| Fonts | Cairo for Arabic · Inter for Latin — vendored in `assets/fonts/` |
 | Jira | Jira Cloud · API token auth |
 | Tests | `node --test`, no dependencies |
 
