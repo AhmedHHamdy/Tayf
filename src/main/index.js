@@ -110,6 +110,7 @@ function start() {
       autoStart: autostart.isEnabled(),
       appearance: settings.get('appearance'),
       theme: settings.get('theme'),
+      font: settings.get('font'),
       uiScale: settings.get('uiScale'),
       nudges: readNudges(settings)
     }),
@@ -119,6 +120,7 @@ function start() {
       if (typeof patch.autoStart === 'boolean') autostart.setEnabled(patch.autoStart);
       if (patch.appearance) settings.set('appearance', patch.appearance);
       if (patch.theme) settings.set('theme', patch.theme);
+      if (patch.font) settings.set('font', patch.font);
       if (typeof patch.uiScale === 'number') {
         settings.set('uiScale', patch.uiScale);
         overlay.setZoom(patch.uiScale);

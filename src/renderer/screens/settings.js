@@ -2,7 +2,7 @@ import elements from '../elements.js';
 import { state } from '../state.js';
 import { showLayout, paintBanners, setContext } from '../chrome.js';
 import { backToTaskList } from './task-list.js';
-import { APPEARANCES, THEMES, SCALES, applyPreferences } from '../appearance.js';
+import { APPEARANCES, THEMES, FONTS, SCALES, applyPreferences } from '../appearance.js';
 import { createSelect } from '../select.js';
 
 const CLOSE_DELAY_MS = 900;
@@ -44,6 +44,9 @@ const selects = {
   }),
   theme: createSelect('stheme', {
     onChange: (value) => savePreference({ theme: value })
+  }),
+  font: createSelect('sfont', {
+    onChange: (value) => savePreference({ font: value })
   }),
   scale: createSelect('sscale', {
     onChange: (value) => savePreference({ uiScale: Number(value) })
@@ -131,16 +134,20 @@ function paintPreferences(preferences) {
   elements.sautotext.textContent =
     AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
 
-  paintAppearance(preferences.appearance);
+  const applied = applyPreferences(preferences);
+  paintAppearance(applied.appearance);
   selects.theme.setOptions(
     THEMES.map((theme) => ({ id: theme.value, label: theme.label, dot: theme.value })),
-    preferences.theme || 'amber'
+    applied.theme
+  );
+  selects.font.setOptions(
+    FONTS.map((font) => ({ id: font.value, label: font.label })),
+    applied.font
   );
   selects.scale.setOptions(
     SCALES.map((scale) => ({ id: String(scale.value), label: scale.label })),
     String(preferences.uiScale || 1)
   );
-  applyPreferences(preferences);
 
   const nudges = preferences.nudges || {};
   elements.snudge.checked = !!nudges.enabled;

@@ -1,6 +1,8 @@
 /* ── الخطوط ────────────────────────────────────────────────────────────────
    Inter للاتيني والأرقام، Cairo للعربي. الترتيب مقصود: المتصفح بياخد أول خط
    فيه الحرف المطلوب، و Inter مفيهوش حروف عربية، فالعربي بيقع على Cairo لوحده.
+   Readex Pro هو الاختيار البديل، ومتسمّي عيلتين لنفس السبب: ملف للاتيني وملف
+   للعربي، ولو الاتنين اتسمّوا نفس الاسم كان التاني هيلغي الأول.
    خط SF بتاع Apple مش هنا عن قصد — رخصته لمنصات Apple بس، وإحنا على ويندوز
    ولينكس كمان. التفاصيل في assets/fonts/README.md.                        */
 
@@ -18,6 +20,22 @@
   font-weight: 200 1000;
   font-display: swap;
   src: url('../../assets/fonts/cairo-arabic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Readex Pro Latin';
+  font-style: normal;
+  font-weight: 160 700;
+  font-display: swap;
+  src: url('../../assets/fonts/readex-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Readex Pro Arabic';
+  font-style: normal;
+  font-weight: 160 700;
+  font-display: swap;
+  src: url('../../assets/fonts/readex-arabic.woff2') format('woff2');
 }
 
 /* ── المقاسات ──────────────────────────────────────────────────────────────
@@ -57,6 +75,15 @@
     --r-full: 999px;
   }
 
+  /* اختيار الخط بيبدّل --sans بس — المقاسات والسلّم زي ما هما */
+  :root[data-font="readex"] {
+    --sans: 'Readex Pro Latin', 'Readex Pro Arabic', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  :root[data-font="system"] {
+    --sans: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
 /* ── الألوان ───────────────────────────────────────────────────────────────
    الوضع الغامق هو الأساس على :root، والفاتح بيتكتب فوقه.
    الوضع بيتحدد من الجافاسكريبت (appearance.js) وبيتحط على <html> كـ
@@ -89,12 +116,12 @@
     --muted:   #9b9da6;
     --dim:     #777b8b;
 
-    /* ألوان الثيمات — النقطة في القايمة ولون التمييز بيقروا من هنا الاتنين */
-    --th-amber:  #f0a83c;
-    --th-blue:   #5b9dd9;
-    --th-violet: #b49bff;
-    --th-green:  #57b98a;
-    --th-rose:   #ff8fa8;
+    /* عيّنة كل ثيم في القايمة: نص خلفيته ونص لون تمييزه */
+    --th-tokyo:    #1a1b26;  --th-tokyo-2:    #7aa2f7;
+    --th-one-dark: #282c34;  --th-one-dark-2: #61afef;
+    --th-dracula:  #282a36;  --th-dracula-2:  #bd93f9;
+    --th-nord:     #2e3440;  --th-nord-2:     #88c0d0;
+    --th-github:   #0d1117;  --th-github-2:   #58a6ff;
 
     /* خلفية الكنترول المرفوع — الاختيار الشغّال في مجموعة الأزرار */
     --raised: #2b2b34;
@@ -156,11 +183,11 @@
     --muted:   #54565e;
     --dim:     #717480;
 
-    --th-amber:  #a3670d;
-    --th-blue:   #1f6bb0;
-    --th-violet: #5a34b8;
-    --th-green:  #2e8359;
-    --th-rose:   #b52a52;
+    --th-tokyo:    #eef0f7;  --th-tokyo-2:    #34548a;
+    --th-one-dark: #f7f7f8;  --th-one-dark-2: #2f62d6;
+    --th-dracula:  #fdf9ee;  --th-dracula-2:  #644ac9;
+    --th-nord:     #eceff4;  --th-nord-2:     #3f6a99;
+    --th-github:   #f6f8fa;  --th-github-2:   #0969da;
 
     --raised: #ffffff;
     --chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2354565e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
@@ -190,12 +217,124 @@
     --ty-epic:  #5a34b8;  --ty-epic-bg:  rgba(107,63,212,.12);
   }
 
-  /* لون التمييز بيتاخد من لون الثيم — والوضع بيبدّل السلّم كله فوق */
-  :root[data-theme="amber"]  { --accent: var(--th-amber); }
-  :root[data-theme="blue"]   { --accent: var(--th-blue); }
-  :root[data-theme="violet"] { --accent: var(--th-violet); }
-  :root[data-theme="green"]  { --accent: var(--th-green); }
-  :root[data-theme="rose"]   { --accent: var(--th-rose); }
+/* ── الثيمات ───────────────────────────────────────────────────────────────
+   كل ثيم بالتة كاملة مأخوذة من نسخته في VS Code، بوجهين: غامق وفاتح. اللي
+   مش مكتوب هنا بيورث من بلوك الوضع فوق — الأحمر والأخضر وألوان الأنواع
+   ثابتة عن قصد، لأن معناها مربوط بالحالة مش بالثيم.
+   والدرجات الشفافة بتتحسب من --text بدل الأبيض والأسود الصريح، فبتاخد
+   مسحة الثيم لوحدها من غير ما نكتبها عشر مرات.                            */
+
+  :root[data-appearance="dark"][data-theme] {
+    --line:     color-mix(in srgb, var(--text)  8%, transparent);
+    --fill:     color-mix(in srgb, var(--text)  5%, transparent);
+    --fill-2:   color-mix(in srgb, var(--text)  7%, transparent);
+    --fill-3:   color-mix(in srgb, var(--text)  6%, transparent);
+    --hover:    color-mix(in srgb, var(--text)  4%, transparent);
+    --rail:     color-mix(in srgb, var(--text) 12%, transparent);
+    --scroll:   color-mix(in srgb, var(--text) 11%, transparent);
+    --scroll-2: color-mix(in srgb, var(--text) 14%, transparent);
+  }
+
+  :root[data-appearance="light"][data-theme] {
+    --line:     color-mix(in srgb, var(--text) 12%, transparent);
+    --fill:     color-mix(in srgb, var(--text)  5%, transparent);
+    --fill-2:   color-mix(in srgb, var(--text)  8%, transparent);
+    --fill-3:   color-mix(in srgb, var(--text)  6%, transparent);
+    --hover:    color-mix(in srgb, var(--text)  4%, transparent);
+    --rail:     color-mix(in srgb, var(--text) 15%, transparent);
+    --scroll:   color-mix(in srgb, var(--text) 20%, transparent);
+    --scroll-2: color-mix(in srgb, var(--text) 25%, transparent);
+  }
+
+  :root[data-appearance="dark"][data-theme="tokyo"] {
+    --scrim: rgba(8,9,15,.55);  --scrim-solid: #10111a;
+    --panel: #1a1b26;  --elev: #24283b;  --elev-2: #1f2335;  --raised: #2a2e42;
+    --text: #c0caf5;  --text-2: #a9b1d6;  --text-3: #9aa5ce;
+    --muted: #787c99;  --dim: #565f89;
+    --accent: #7aa2f7;
+    --st-new: #6b7089;  --st-work: #7dcfff;  --st-work-txt: #9ad8ff;  --st-done: #9ece6a;
+  }
+
+  :root[data-appearance="light"][data-theme="tokyo"] {
+    --scrim: rgba(222,226,240,.58);  --scrim-solid: #dcdfef;
+    --panel: #eef0f7;  --elev: #f9fafd;  --elev-2: #f2f4fa;  --raised: #ffffff;
+    --text: #343b58;  --text-2: #414868;  --text-3: #565f89;
+    --muted: #61658a;  --dim: #8990ad;
+    --accent: #34548a;
+    --st-new: #6b7089;  --st-work: #0f5c8c;  --st-work-txt: #0f5c8c;  --st-done: #4a6b12;
+  }
+
+  :root[data-appearance="dark"][data-theme="one-dark"] {
+    --scrim: rgba(10,11,13,.55);  --scrim-solid: #17191d;
+    --panel: #21252b;  --elev: #282c34;  --elev-2: #2c313a;  --raised: #333842;
+    --text: #abb2bf;  --text-2: #c8ccd4;  --text-3: #9da5b4;
+    --muted: #7f848e;  --dim: #5c6370;
+    --accent: #61afef;
+    --st-new: #7f848e;  --st-work: #56b6c2;  --st-work-txt: #78cbd4;  --st-done: #98c379;
+  }
+
+  :root[data-appearance="light"][data-theme="one-dark"] {
+    --scrim: rgba(240,240,241,.58);  --scrim-solid: #e3e5e8;
+    --panel: #f7f7f8;  --elev: #ffffff;  --elev-2: #f0f0f1;  --raised: #ffffff;
+    --text: #383a42;  --text-2: #494b53;  --text-3: #5c5f66;
+    --muted: #696c77;  --dim: #a0a1a7;
+    --accent: #2f62d6;
+    --st-new: #696c77;  --st-work: #0184bc;  --st-work-txt: #0184bc;  --st-done: #3f8c3e;
+  }
+
+  :root[data-appearance="dark"][data-theme="dracula"] {
+    --scrim: rgba(10,9,16,.58);  --scrim-solid: #181620;
+    --panel: #282a36;  --elev: #343746;  --elev-2: #2f313d;  --raised: #44475a;
+    --text: #f8f8f2;  --text-2: #e4e4de;  --text-3: #c9c9c3;
+    --muted: #a0a3b8;  --dim: #6272a4;
+    --accent: #bd93f9;
+    --st-new: #6272a4;  --st-work: #8be9fd;  --st-work-txt: #8be9fd;  --st-done: #50fa7b;
+  }
+
+  :root[data-appearance="light"][data-theme="dracula"] {
+    --scrim: rgba(247,243,232,.6);  --scrim-solid: #efe9da;
+    --panel: #fdf9ee;  --elev: #fffdf6;  --elev-2: #f7f2e4;  --raised: #ffffff;
+    --text: #29282b;  --text-2: #3b3a3f;  --text-3: #55535a;
+    --muted: #6c6a72;  --dim: #9a97a2;
+    --accent: #644ac9;
+    --st-new: #6c6a72;  --st-work: #036a96;  --st-work-txt: #036a96;  --st-done: #14710a;
+  }
+
+  :root[data-appearance="dark"][data-theme="nord"] {
+    --scrim: rgba(12,16,23,.56);  --scrim-solid: #242b38;
+    --panel: #2e3440;  --elev: #3b4252;  --elev-2: #353b48;  --raised: #434c5e;
+    --text: #eceff4;  --text-2: #e5e9f0;  --text-3: #d8dee9;
+    --muted: #a7b0be;  --dim: #7b8494;
+    --accent: #88c0d0;
+    --st-new: #7b8494;  --st-work: #81a1c1;  --st-work-txt: #9bb7d2;  --st-done: #a3be8c;
+  }
+
+  :root[data-appearance="light"][data-theme="nord"] {
+    --scrim: rgba(226,231,238,.6);  --scrim-solid: #dde3ea;
+    --panel: #eceff4;  --elev: #f8fafc;  --elev-2: #e5e9f0;  --raised: #ffffff;
+    --text: #2e3440;  --text-2: #3b4252;  --text-3: #4c566a;
+    --muted: #5a6678;  --dim: #8792a3;
+    --accent: #3f6a99;
+    --st-new: #5a6678;  --st-work: #2f6a80;  --st-work-txt: #2f6a80;  --st-done: #4b7a3c;
+  }
+
+  :root[data-appearance="dark"][data-theme="github"] {
+    --scrim: rgba(1,4,9,.6);  --scrim-solid: #010409;
+    --panel: #0d1117;  --elev: #161b22;  --elev-2: #121820;  --raised: #21262d;
+    --text: #e6edf3;  --text-2: #c9d1d9;  --text-3: #b1bac4;
+    --muted: #8b949e;  --dim: #6e7681;
+    --accent: #58a6ff;
+    --st-new: #8b949e;  --st-work: #79c0ff;  --st-work-txt: #a5d6ff;  --st-done: #3fb950;
+  }
+
+  :root[data-appearance="light"][data-theme="github"] {
+    --scrim: rgba(246,248,250,.6);  --scrim-solid: #e6eaef;
+    --panel: #f6f8fa;  --elev: #ffffff;  --elev-2: #eff2f5;  --raised: #ffffff;
+    --text: #1f2328;  --text-2: #32383f;  --text-3: #4b535c;
+    --muted: #656d76;  --dim: #8c959f;
+    --accent: #0969da;
+    --st-new: #656d76;  --st-work: #0550ae;  --st-work-txt: #0550ae;  --st-done: #1a7f37;
+  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: transparent; overflow: hidden; }
@@ -430,7 +569,11 @@
   .sel-chev { width: 14px; height: 14px; flex: none; color: var(--muted); }
 
   .sel-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sel-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--dot); }
+  .sel-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg, var(--dot) 50%, var(--dot-2, var(--dot)) 50%);
+    box-shadow: inset 0 0 0 1px var(--rail);
+  }
 
   .sel-panel {
     position: fixed; z-index: 30;
@@ -467,11 +610,11 @@
   .sel-empty { padding: var(--sp-5); font-size: var(--fs-callout); color: var(--dim); }
 
   /* ألوان الثيمات — مصدر واحد للنقطة وللون التمييز مع بعض */
-  .sel-dot[data-dot="amber"]  { --dot: var(--th-amber); }
-  .sel-dot[data-dot="blue"]   { --dot: var(--th-blue); }
-  .sel-dot[data-dot="violet"] { --dot: var(--th-violet); }
-  .sel-dot[data-dot="green"]  { --dot: var(--th-green); }
-  .sel-dot[data-dot="rose"]   { --dot: var(--th-rose); }
+  .sel-dot[data-dot="tokyo"]    { --dot: var(--th-tokyo);    --dot-2: var(--th-tokyo-2); }
+  .sel-dot[data-dot="one-dark"] { --dot: var(--th-one-dark); --dot-2: var(--th-one-dark-2); }
+  .sel-dot[data-dot="dracula"]  { --dot: var(--th-dracula);  --dot-2: var(--th-dracula-2); }
+  .sel-dot[data-dot="nord"]     { --dot: var(--th-nord);     --dot-2: var(--th-nord-2); }
+  .sel-dot[data-dot="github"]   { --dot: var(--th-github);   --dot-2: var(--th-github-2); }
 
   /* مجموعة أزرار — بديل السيليكت لما الاختيارات قليلة وليها أيقونات.
      راديو حقيقي مخفي جوه كل زر، فالتنقل بالأسهم والـ change بييجوا من المتصفح. */

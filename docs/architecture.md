@@ -94,12 +94,14 @@ The renderer never sees a Jira URL, a token, or a network call. It only calls
 **Shared components.** `select.js` is the list control — single or multiple, with a
 search box that appears on its own once there are eight options. Its panel hangs off
 `<body>` rather than the row, because `#sbody` scrolls and `#panel` hides its overflow;
-anywhere else it would be clipped. `appearance.js` owns the mode and theme on `<html>`.
+anywhere else it would be clipped. `appearance.js` owns the mode, theme and font on `<html>`.
 
 **Every size comes from a token.** The top of `styles.css` holds the type ramp (macOS's,
 from Apple's Human Interface Guidelines, under Apple's names), spacing on the 4pt grid,
-and five radii. No rule writes a pixel value by hand. A theme sets `--accent` and the
-rest is derived with `color-mix`, so adding one is two lines.
+and five radii. No rule writes a pixel value by hand. A theme is a full palette — one
+block for dark, one for light, each setting the surfaces, the text and `--accent` —
+while the translucent tints derive from `--text` with `color-mix` and so pick up the
+theme on their own. Choosing a font swaps `--sans` and nothing else.
 
 **The CSP is tight, and it shapes how we write.** `style-src 'self'` forbids inline
 styles, so a colour coming from JavaScript is carried on a `data-*` attribute with the

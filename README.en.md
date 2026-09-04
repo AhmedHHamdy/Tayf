@@ -37,7 +37,9 @@ description. The due date field understands `today`, `tomorrow`, weekday names,
 ## Appearance
 
 Settings → **المظهر** (`Ctrl+4`): pin light or dark, or leave it following the system ·
-five accent themes · and the overlay scales from 90% to 130% if you find it small.
+five themes carried over from VS Code (Tokyo Night, One Dark Pro, Dracula, Nord,
+GitHub), each with a light and a dark face · a choice of three fonts · and the overlay
+scales from 90% to 130% if you find it small.
 
 Every size comes from one token layer built on the macOS type ramp in Apple's
 [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/typography).
