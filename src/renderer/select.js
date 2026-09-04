@@ -12,6 +12,7 @@ import { escapeHtml } from './format.js';
 const SEARCH_FROM = 8;
 const PANEL_GAP = 4;
 const EDGE_GAP = 8;
+const PANEL_MAX = 320;   // نفس الـ max-width في الـ CSS — min-width بيغلب max-width
 
 const CHEVRON =
   '<svg class="sel-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
@@ -46,7 +47,7 @@ function dotMarkup(dot) {
   return dot ? `<span class="sel-dot" data-dot="${escapeHtml(dot)}"></span>` : '';
 }
 
-export function createSelect(hostId, { multiple, searchable, emptyLabel, onChange } = {}) {
+export function createSelect(hostId, { multiple, searchable, emptyLabel, summary, onChange } = {}) {
   const host = document.getElementById(hostId);
   const empty = emptyLabel || '—';
 
@@ -86,7 +87,8 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, onChang
       return;
     }
 
-    const text = picked.map((option) => option.label).join('، ');
+    const labels = picked.map((option) => option.label);
+    const text = summary ? summary(labels) : labels.join('، ');
     const dot = picked.length === 1 ? dotMarkup(picked[0].dot) : '';
     valueSlot.innerHTML = `${dot}<span class="sel-text">${escapeHtml(text)}</span>`;
   }
@@ -121,7 +123,7 @@ export function createSelect(hostId, { multiple, searchable, emptyLabel, onChang
 
   function place() {
     const rect = trigger.getBoundingClientRect();
-    panel.style.minWidth = `${rect.width}px`;
+    panel.style.minWidth = `${Math.min(rect.width, PANEL_MAX)}px`;
     panel.hidden = false;
 
     const { offsetHeight: height, offsetWidth: width } = panel;

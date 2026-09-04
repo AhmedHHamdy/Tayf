@@ -384,7 +384,9 @@
   .stitle { font-size: var(--fs-body); color: var(--text-2); cursor: default; }
   .shint { font-size: var(--fs-callout); color: var(--muted); margin-top: var(--sp-2); line-height: var(--lh-normal); }
 
-  .sctl { flex: 0 0 260px; }
+  /* min-width: 0 مهم — من غيره الـ min-width: auto الافتراضي بيخلي محتوى طويل
+     يكسر الـ flex-basis ويكبّس عمود العنوان جنبه. */
+  .sctl { flex: 0 0 260px; min-width: 0; }
   .sctl-end { flex: 0 0 auto; display: flex; justify-content: flex-end; }
   .sctl input, .sctl select {
     width: 100%; padding: var(--sp-4) var(--sp-5);

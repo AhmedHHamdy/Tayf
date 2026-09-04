@@ -32,6 +32,8 @@ const asHotkeys = (choices) =>
 const asNumbers = (values, unit) =>
   values.map((value) => ({ id: String(value), label: `${value} ${unit}` }));
 
+const countOfStatuses = (count) => (count > 10 ? `${count} حالة` : `${count} حالات`);
+
 const selects = {
   hotkey: createSelect('shotkey', {
     onChange: (value) => savePreference({ toggleHotkey: value })
@@ -61,6 +63,9 @@ const selects = {
     multiple: true,
     searchable: true,
     emptyLabel: 'مفيش حالات لسه',
+    // أسامي الحالات إنجليزي جوه واجهة عربية — تلاتة منهم ورا بعض بيبقوا
+    // مقروئين بالعافية، فبنعد بدل ما نسرد.
+    summary: (names) => (names.length > 2 ? countOfStatuses(names.length) : names.join('، ')),
     onChange: (next) => {
       if (!next.length) {
         setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
