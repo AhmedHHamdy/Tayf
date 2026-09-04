@@ -8,8 +8,9 @@ const RENDERER_ENTRY = path.join(__dirname, '..', 'renderer', 'index.html');
 const PRELOAD = path.join(__dirname, '..', 'preload.js');
 
 class OverlayWindow {
-  constructor({ onHidden }) {
+  constructor({ onHidden, zoom }) {
     this.onHidden = onHidden;
+    this.zoom = zoom || 1;
     this.window = null;
   }
 
@@ -35,11 +36,22 @@ class OverlayWindow {
 
     this.window.setAlwaysOnTop(true, 'screen-saver');
     this.window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    this.window.webContents.on('did-finish-load', () => this.applyZoom());
     this.window.loadFile(RENDERER_ENTRY);
     this.window.on('blur', () => this.hide());
     platform.attachOverlay(this.window);
 
     return this.window;
+  }
+
+  setZoom(factor) {
+    this.zoom = factor || 1;
+    this.applyZoom();
+  }
+
+  applyZoom() {
+    if (!this.window || this.window.isDestroyed()) return;
+    this.window.webContents.setZoomFactor(this.zoom);
   }
 
   send(channel, payload) {

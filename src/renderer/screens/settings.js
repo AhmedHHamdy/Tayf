@@ -3,10 +3,11 @@ import { state } from '../state.js';
 import { showLayout, paintBanners, setContext } from '../chrome.js';
 import { escapeHtml } from '../format.js';
 import { backToTaskList } from './task-list.js';
+import { APPEARANCES, THEMES, SCALES, applyPreferences } from '../appearance.js';
 
 const CLOSE_DELAY_MS = 900;
-const TABS = ['conn', 'nudge', 'gen'];
-const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen' };
+const TABS = ['conn', 'nudge', 'gen', 'appear'];
+const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen', appear: 'pappear' };
 const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
 const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
 const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
@@ -41,6 +42,24 @@ function fillNumbers(select, values, current, unit) {
       return `<option value="${value}"${selected}>${value} ${unit}</option>`;
     })
     .join('');
+}
+
+function fillOptions(select, options, current) {
+  select.innerHTML = options
+    .map((option) => {
+      const selected = option.value === current ? ' selected' : '';
+      const value = escapeHtml(String(option.value));
+      return `<option value="${value}"${selected}>${escapeHtml(option.label)}</option>`;
+    })
+    .join('');
+}
+
+function paintThemes(current) {
+  elements.stheme.innerHTML = THEMES.map((theme) => {
+    const on = theme.value === current ? ' on' : '';
+    const name = escapeHtml(theme.label);
+    return `<span class="swatch${on}" data-th="${escapeHtml(theme.value)}" title="${name}"></span>`;
+  }).join('');
 }
 
 function paintStatuses(statuses, working) {
@@ -84,6 +103,11 @@ function paintPreferences(preferences) {
   elements.sauto.checked = !!preferences.autoStart;
   elements.sautotext.textContent =
     AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
+
+  fillOptions(elements.sappearance, APPEARANCES, preferences.appearance || 'system');
+  fillOptions(elements.sscale, SCALES, preferences.uiScale || 1);
+  paintThemes(preferences.theme || 'amber');
+  applyPreferences(preferences);
 
   const nudges = preferences.nudges || {};
   elements.snudge.checked = !!nudges.enabled;
@@ -211,6 +235,16 @@ elements.saddkey.addEventListener('change', () =>
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
+elements.sappearance.addEventListener('change', () =>
+  savePreference({ appearance: elements.sappearance.value })
+);
+elements.sscale.addEventListener('change', () =>
+  savePreference({ uiScale: Number(elements.sscale.value) })
+);
+elements.stheme.addEventListener('click', (event) => {
+  const swatch = event.target.closest('.swatch');
+  if (swatch) savePreference({ theme: swatch.dataset.th });
+});
 
 const saveNudge = (patch) => savePreference({ nudges: patch });
 

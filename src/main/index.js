@@ -57,7 +57,7 @@ function start() {
     log
   });
 
-  const overlay = new OverlayWindow({ onHidden: () => {} });
+  const overlay = new OverlayWindow({ onHidden: () => {}, zoom: settings.get('uiScale') });
   overlay.create();
 
   const openOverlay = (screen) => overlay.show({ state: ipc.serialiseState(workspace.state, settings.get('nudgeWorkingStatuses')), screen });
@@ -108,12 +108,21 @@ function start() {
       toggleChoices: hotkeyChoices(platform.toggleHotkeys),
       composeChoices: hotkeyChoices(platform.composeHotkeys),
       autoStart: autostart.isEnabled(),
+      appearance: settings.get('appearance'),
+      theme: settings.get('theme'),
+      uiScale: settings.get('uiScale'),
       nudges: readNudges(settings)
     }),
     savePreferences: (patch) => {
       if (patch.toggleHotkey) hotkeys.choose(patch.toggleHotkey);
       if (patch.composeHotkey) hotkeys.chooseCompose(patch.composeHotkey);
       if (typeof patch.autoStart === 'boolean') autostart.setEnabled(patch.autoStart);
+      if (patch.appearance) settings.set('appearance', patch.appearance);
+      if (patch.theme) settings.set('theme', patch.theme);
+      if (typeof patch.uiScale === 'number') {
+        settings.set('uiScale', patch.uiScale);
+        overlay.setZoom(patch.uiScale);
+      }
       if (patch.nudges) settings.remember(storedNudges(patch.nudges));
       tray.update();
       return actions.readPreferences();
