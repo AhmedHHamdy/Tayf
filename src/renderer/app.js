@@ -55,6 +55,8 @@ export function handleShown(payload) {
 
 export async function startApp(preferences) {
   relabelForMac();
+  document.getElementById('actionkey').textContent =
+    document.documentElement.dir === 'ltr' ? '→' : '←';
   installKeyboard();
 
   installBoard(repaint);
@@ -69,7 +71,7 @@ export async function startApp(preferences) {
     window.sessionStorage.removeItem('language-settings');
     await goTo('settings');
     showTab(languageTab);
-    document.getElementById('slanguage').focus();
+    document.getElementById('slanguage-trigger').focus();
     return;
   }
   return goTo('tasks');

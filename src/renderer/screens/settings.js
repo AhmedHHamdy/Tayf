@@ -17,9 +17,14 @@ const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
 const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
 const OVERDUE_CHOICES = [1, 2, 3, 5, 7];
 const IN_PROGRESS = 'indeterminate';
+const LANGUAGES = [
+  { id: 'ar', label: 'العربية' },
+  { id: 'en', label: 'English' }
+];
 
 let saving = false;
 let activeTab = 'conn';
+let savedLanguage = 'ar';
 
 function setNote(text, className) {
   elements.snote.textContent = text || '';
@@ -37,6 +42,9 @@ const asNumbers = (values, unit) =>
 const countOfStatuses = (count) => (count > 10 ? t("{0} حالة", [count]) : t("{0} حالات", [count]));
 
 const selects = {
+  language: createSelect('slanguage', {
+    onChange: saveLanguage
+  }),
   hotkey: createSelect('shotkey', {
     onChange: (value) => savePreference({ toggleHotkey: value })
   }),
@@ -81,6 +89,9 @@ const selects = {
     }
   })
 };
+
+const languageTrigger = elements.slanguage.querySelector('.sel-trigger');
+languageTrigger.id = 'slanguage-trigger';
 
 function paintAppearance(current) {
   const chosen = APPEARANCES.includes(current) ? current : 'system';
@@ -129,7 +140,8 @@ function chosenDays() {
 }
 
 function paintPreferences(preferences) {
-  elements.slanguage.value = preferences.language === 'en' ? 'en' : 'ar';
+  savedLanguage = preferences.language === 'en' ? 'en' : 'ar';
+  selects.language.setOptions(LANGUAGES, savedLanguage);
   selects.hotkey.setOptions(asHotkeys(preferences.toggleChoices), preferences.toggleHotkey);
   selects.addKey.setOptions(asHotkeys(preferences.composeChoices), preferences.composeHotkey);
   elements.sauto.checked = !!preferences.autoStart;
@@ -275,17 +287,19 @@ elements.snav.addEventListener('click', (event) => {
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
-elements.slanguage.addEventListener('change', async () => {
-  elements.slanguage.disabled = true;
+async function saveLanguage(language) {
+  languageTrigger.disabled = true;
   try {
-    await window.tayf.savePreferences({ language: elements.slanguage.value });
+    await window.tayf.savePreferences({ language });
     window.sessionStorage.setItem('language-settings', 'gen');
     window.location.reload();
   } catch {
-    elements.slanguage.disabled = false;
+    selects.language.setValue(savedLanguage);
+    languageTrigger.disabled = false;
+    languageTrigger.focus();
     setNote(t('مقدرناش نحفظ الإعدادات.'), 'bad');
   }
-});
+}
 elements.sappearance.addEventListener('change', (event) => {
   if (event.target.checked) savePreference({ appearance: event.target.value });
 });

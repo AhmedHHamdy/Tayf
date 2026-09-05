@@ -236,14 +236,11 @@
 
             <div class="srow">
               <div class="scell">
-                <label class="stitle" for="slanguage">اللغة / Language</label>
+                <label class="stitle" for="slanguage-trigger">اللغة / Language</label>
                 <div class="shint">اختار لغة الواجهة. بتتحفظ تلقائي.</div>
               </div>
               <div class="sctl">
-                <select id="slanguage">
-                  <option value="ar" lang="ar">العربية</option>
-                  <option value="en" lang="en">English</option>
-                </select>
+                <div class="sel" id="slanguage"></div>
               </div>
             </div>
 
@@ -397,7 +394,7 @@
     <div id="foot">
       <span id="meta"></span>
       <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> تنقل</span>
-      <span><kbd>&larr;</kbd> خيارات</span>
+      <span><kbd id="actionkey">&larr;</kbd> خيارات</span>
       <span><kbd>Tab</kbd> غيّر الحالة</span>
       <span><kbd>Ctrl L</kbd> شكل القائمة</span>
     </div>
