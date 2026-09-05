@@ -1,3 +1,4 @@
+import { t } from './i18n.js';
 import elements from './elements.js';
 import { state, selectedRow } from './state.js';
 import { goTo, activeScreenName } from './navigation.js';
@@ -10,11 +11,11 @@ const FALLBACK_WIDTH = 200;
 const FALLBACK_HEIGHT = 160;
 
 export const ACTIONS = [
-  { id: 'view', label: 'عرض', shortcut: 'V' },
-  { id: 'edit', label: 'تعديل', shortcut: 'E' },
-  { id: 'status', label: 'غيّر الحالة', shortcut: 'S' },
-  { id: 'jira', label: 'افتح في جيرا', shortcut: 'O' },
-  { id: 'copy', label: 'انسخ المفتاح', shortcut: 'C' }
+  { id: 'view', label: t("عرض"), shortcut: 'V' },
+  { id: 'edit', label: t("تعديل"), shortcut: 'E' },
+  { id: 'status', label: t("غيّر الحالة"), shortcut: 'S' },
+  { id: 'jira', label: t("افتح في جيرا"), shortcut: 'O' },
+  { id: 'copy', label: t("انسخ المفتاح"), shortcut: 'C' }
 ];
 
 let open = false;

@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import elements from '../elements.js';
 import { state } from '../state.js';
 import { showLayout, paintBanners, setContext, setFlash } from '../chrome.js';
@@ -8,9 +9,9 @@ import { createSelect } from '../select.js';
 const CLOSE_DELAY_MS = 900;
 const TABS = ['conn', 'nudge', 'gen', 'appear'];
 const PANES = { conn: 'pconn', nudge: 'pnudge', gen: 'pgen', appear: 'pappear' };
-const AUTO_START_HINT = { darwin: 'يفتح لوحده مع الماك.' };
-const DAY_LETTERS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
-const DAY_NAMES = ['الأحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'];
+const AUTO_START_HINT = { darwin: t("يفتح لوحده مع الماك.") };
+const DAY_LETTERS = [t("ح"), t("ن"), t("ث"), t("ر"), t("خ"), t("ج"), t("س")];
+const DAY_NAMES = [t("الأحد"), t("الاتنين"), t("التلات"), t("الأربع"), t("الخميس"), t("الجمعة"), t("السبت")];
 const EVERY_CHOICES = [1, 5, 10, 15, 20, 30, 45, 60];
 const IDLE_CHOICES = [1, 3, 5, 10, 15, 20, 30];
 const CHECK_CHOICES = [1, 5, 15, 30, 45, 60, 90, 120, 180, 240];
@@ -33,7 +34,7 @@ const asHotkeys = (choices) =>
 const asNumbers = (values, unit) =>
   values.map((value) => ({ id: String(value), label: `${value} ${unit}` }));
 
-const countOfStatuses = (count) => (count > 10 ? `${count} حالة` : `${count} حالات`);
+const countOfStatuses = (count) => (count > 10 ? t("{0} حالة", [count]) : t("{0} حالات", [count]));
 
 const selects = {
   hotkey: createSelect('shotkey', {
@@ -66,13 +67,13 @@ const selects = {
   statuses: createSelect('snudgestatuses', {
     multiple: true,
     searchable: true,
-    emptyLabel: 'مفيش حالات لسه',
+    emptyLabel: t("مفيش حالات لسه"),
     // أسامي الحالات إنجليزي جوه واجهة عربية — تلاتة منهم ورا بعض بيبقوا
     // مقروئين بالعافية، فبنعد بدل ما نسرد.
-    summary: (names) => (names.length > 2 ? countOfStatuses(names.length) : names.join('، ')),
+    summary: (names) => (names.length > 2 ? countOfStatuses(names.length) : names.join(t("، "))),
     onChange: (next) => {
       if (!next.length) {
-        setNote('لازم حالة واحدة على الأقل تعني إنك شغال.', 'bad');
+        setNote(t("لازم حالة واحدة على الأقل تعني إنك شغال."), 'bad');
         return false;
       }
       saveNudge({ workingStatuses: next });
@@ -128,11 +129,12 @@ function chosenDays() {
 }
 
 function paintPreferences(preferences) {
+  elements.slanguage.value = preferences.language === 'en' ? 'en' : 'ar';
   selects.hotkey.setOptions(asHotkeys(preferences.toggleChoices), preferences.toggleHotkey);
   selects.addKey.setOptions(asHotkeys(preferences.composeChoices), preferences.composeHotkey);
   elements.sauto.checked = !!preferences.autoStart;
   elements.sautotext.textContent =
-    AUTO_START_HINT[window.tayf.platform] || 'يفتح لوحده مع الويندوز.';
+    AUTO_START_HINT[window.tayf.platform] || t("يفتح لوحده مع الويندوز.");
 
   const applied = applyPreferences(preferences);
   paintAppearance(applied.appearance);
@@ -151,21 +153,21 @@ function paintPreferences(preferences) {
 
   const nudges = preferences.nudges || {};
   elements.snudge.checked = !!nudges.enabled;
-  selects.every.setOptions(asNumbers(EVERY_CHOICES, 'دقيقة'), String(nudges.everyMinutes));
-  selects.idle.setOptions(asNumbers(IDLE_CHOICES, 'دقيقة'), String(nudges.idleMinutes));
+  selects.every.setOptions(asNumbers(EVERY_CHOICES, t("دقيقة")), String(nudges.everyMinutes));
+  selects.idle.setOptions(asNumbers(IDLE_CHOICES, t("دقيقة")), String(nudges.idleMinutes));
   elements.snudgestart.value = nudges.workStart || '';
   elements.snudgeend.value = nudges.workEnd || '';
   elements.snudgecheck.checked = !!nudges.checkEnabled;
-  selects.checkEvery.setOptions(asNumbers(CHECK_CHOICES, 'دقيقة'), String(nudges.checkMinutes));
+  selects.checkEvery.setOptions(asNumbers(CHECK_CHOICES, t("دقيقة")), String(nudges.checkMinutes));
   elements.snudgeoverdue.checked = !!nudges.overdueEnabled;
-  selects.overdueDays.setOptions(asNumbers(OVERDUE_CHOICES, 'يوم'), String(nudges.overdueDays));
+  selects.overdueDays.setOptions(asNumbers(OVERDUE_CHOICES, t("يوم")), String(nudges.overdueDays));
   paintDays(nudges.workDays || []);
 }
 
 function refused(requested, registered, choices) {
   if (!requested || requested === registered) return null;
   const fallback = (choices || []).find((choice) => choice.accelerator === registered);
-  return `الاختصار ده محجوز لبرنامج تاني — طيف خد ${fallback ? fallback.label : registered}`;
+  return t("الاختصار ده محجوز لبرنامج تاني — طيف خد {0}", [fallback ? fallback.label : registered]);
 }
 
 async function savePreference(patch) {
@@ -181,7 +183,7 @@ async function savePreference(patch) {
     return;
   }
   setNote('', '');
-  setFlash('اتحفظ', 'done');
+  setFlash(t("اتحفظ"), 'done');
 }
 
 export function showTab(name) {
@@ -213,7 +215,7 @@ export function onConnectionTab() {
 export async function save() {
   if (saving) return;
   saving = true;
-  setNote('بيحفظ وبيجرّب الاتصال…', '');
+  setNote(t("بيحفظ وبيجرّب الاتصال…"), '');
 
   const response = await window.tayf.saveConfig({
     site: elements.ssite.value,
@@ -227,7 +229,7 @@ export async function save() {
     return;
   }
 
-  setNote(`تمام — متصلين باسم ${response.name || ''}. الطبقة هتقفل دلوقتي.`, 'good');
+  setNote(t("تمام — متصلين باسم {0}. الطبقة هتقفل دلوقتي.", [response.name || '']), 'good');
   elements.stoken.value = '';
   setTimeout(async () => {
     await backToTaskList();
@@ -248,8 +250,8 @@ export const settingsScreen = {
     elements.semail.value = stored.email || '';
     elements.stoken.value = '';
     elements.stoken.placeholder = stored.hasToken
-      ? 'متحفوظ — سيبه فاضي لو مش هتغيّره'
-      : 'الصق الـ API Token';
+      ? t("متحفوظ — سيبه فاضي لو مش هتغيّره")
+      : t("الصق الـ API Token");
 
     paintPreferences(await window.tayf.readPreferences());
 
@@ -273,6 +275,17 @@ elements.snav.addEventListener('click', (event) => {
 elements.sauto.addEventListener('change', () =>
   savePreference({ autoStart: elements.sauto.checked })
 );
+elements.slanguage.addEventListener('change', async () => {
+  elements.slanguage.disabled = true;
+  try {
+    await window.tayf.savePreferences({ language: elements.slanguage.value });
+    window.sessionStorage.setItem('language-settings', 'gen');
+    window.location.reload();
+  } catch {
+    elements.slanguage.disabled = false;
+    setNote(t('مقدرناش نحفظ الإعدادات.'), 'bad');
+  }
+});
 elements.sappearance.addEventListener('change', (event) => {
   if (event.target.checked) savePreference({ appearance: event.target.value });
 });
